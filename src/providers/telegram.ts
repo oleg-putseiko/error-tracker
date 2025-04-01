@@ -1,6 +1,7 @@
 import {
   IDebugOptions,
   IInfoOptions,
+  IWarnOptions,
   type IErrorOptions,
   type ILogProvider,
 } from '../log-provider';
@@ -24,6 +25,11 @@ interface IRequestOptions {
 }
 
 interface ITelegramInfoOptions extends IInfoOptions, IRequestOptions {
+  title?: string;
+  description?: string;
+}
+
+interface ITelegramWarnOptions extends IWarnOptions, IRequestOptions {
   title?: string;
   description?: string;
 }
@@ -58,6 +64,20 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
       ...message,
       text: this._rows(
         `ℹ️ ${title}\n`,
+        description && `${description}\n`,
+        `${this._buildMetadataRow()}\n`,
+        context && this._buildContextRow(context),
+      ),
+    });
+  }
+
+  async warn(options: ITelegramWarnOptions) {
+    const { title = 'Warning', description, context, ...message } = options;
+
+    await this._sendMessage({
+      ...message,
+      text: this._rows(
+        `⚠️ ${title}\n`,
         description && `${description}\n`,
         `${this._buildMetadataRow()}\n`,
         context && this._buildContextRow(context),
@@ -110,8 +130,6 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     const searchParams = params
       ? `?${this._stringifySearchParams(params)}`
       : '';
-
-    console.log(botToken);
 
     if (!botToken) throw new TypeError('Telegram bot token is not defined');
 

@@ -3,8 +3,8 @@ import {
   IDebugOptions,
   ILogProvider,
   IInfoOptions,
+  IWarnOptions,
 } from './log-provider';
-import { TelegramLogProvider } from './providers/telegram';
 
 type ExistentialArray<T extends unknown[]> = [...T];
 
@@ -15,7 +15,7 @@ type Providers<TIds extends string[]> = ExistentialArray<{
 type ProviderOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
-  TLogKey extends 'info' | 'error',
+  TLogKey extends 'info' | 'warn' | 'error',
 > = {
   [Index in keyof TProviders]: {
     [Key in TProviders[Index] extends ILogProvider<string>
@@ -31,6 +31,13 @@ type InfoOptions<
   TProviders extends Providers<TProviderIds>,
 > = IInfoOptions & {
   providers?: ProviderOptions<TProviderIds, TProviders, 'info'>;
+};
+
+type WarnOptions<
+  TProviderIds extends string[],
+  TProviders extends Providers<TProviderIds>,
+> = IWarnOptions & {
+  providers?: ProviderOptions<TProviderIds, TProviders, 'warn'>;
 };
 
 type ErrorOptions<
@@ -73,6 +80,20 @@ export class Logger<
     );
   }
 
+  async warn(options: WarnOptions<TProviderIds, TProviders>) {
+    const { context, providers } = options;
+
+    await Promise.allSettled(
+      this._providers.map((provider) =>
+        provider.warn({
+          context,
+          debug: this._isDebugEnabled,
+          ...providers?.[provider.id as keyof typeof providers],
+        }),
+      ),
+    );
+  }
+
   async error(options: ErrorOptions<TProviderIds, TProviders>) {
     const { error, context, providers } = options;
 
@@ -88,39 +109,3 @@ export class Logger<
     );
   }
 }
-
-const logger = new Logger({
-  debug: true,
-  providers: [
-    new TelegramLogProvider({
-      botToken: '7536052994:AAEwD6mzydpgJIi3eYIS2rgJ1OPOSXPPv30',
-      chatId: '-1002536352967',
-    }),
-  ],
-});
-
-logger.error({
-  error: new Error('qwe'),
-  context: {
-    qwe: 'asd',
-  },
-  providers: {
-    telegram: {
-      title: 'Qwe error',
-    },
-  },
-});
-
-logger.info({
-  context: {
-    a: 'qwe',
-  },
-  providers: {
-    telegram: {
-      description: 'Info message',
-      context: {
-        b: 'qwe',
-      },
-    },
-  },
-});
