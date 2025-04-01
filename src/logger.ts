@@ -1,13 +1,10 @@
-import {
-  IErrorCaptureOptions,
-  IErrorLoggingOptions,
-  IErrorTrackProvider,
-} from './error-track-provider';
+import { IErrorOptions, IDebugOptions, ILogProvider } from './log-provider';
+import { TelegramLogProvider } from './providers/telegram';
 
 type ExistentialArray<T extends unknown[]> = [...T];
 
 type Providers<TIds extends string[]> = ExistentialArray<{
-  [Index in keyof TIds]: IErrorTrackProvider<TIds[Index]>;
+  [Index in keyof TIds]: ILogProvider<TIds[Index]>;
 }>;
 
 type ProviderOptions<
@@ -15,29 +12,29 @@ type ProviderOptions<
   TProviders extends Providers<TProviderIds>,
 > = {
   [Index in keyof TProviders]: {
-    [Key in TProviders[Index] extends IErrorTrackProvider<string>
+    [Key in TProviders[Index] extends ILogProvider<string>
       ? TProviders[Index]['id']
-      : never]: TProviders[Index] extends IErrorTrackProvider<string>
-      ? Partial<Parameters<TProviders[Index]['capture']>[0]>
+      : never]: TProviders[Index] extends ILogProvider<string>
+      ? Partial<Parameters<TProviders[Index]['error']>[0]>
       : never;
   };
 }[keyof TProviders];
 
-type ErrorCaptureOptions<
+type ErrorOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
-> = IErrorCaptureOptions & {
+> = IErrorOptions & {
   providerOptions?: ProviderOptions<TProviderIds, TProviders>;
 };
 
 type ErrorTrackerConfig<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds> = Providers<TProviderIds>,
-> = IErrorLoggingOptions & {
+> = IDebugOptions & {
   providers: TProviders;
 };
 
-export class ErrorTracker<
+export class Logger<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
 > {
@@ -49,12 +46,12 @@ export class ErrorTracker<
     this._isDebugEnabled = config.debug ?? false;
   }
 
-  async capture(options: ErrorCaptureOptions<TProviderIds, TProviders>) {
+  async error(options: ErrorOptions<TProviderIds, TProviders>) {
     const { error, context, providerOptions } = options;
 
     const responses = await Promise.allSettled(
       this._providers.map((provider) =>
-        provider.capture({
+        provider.error({
           error,
           context,
           debug: this._isDebugEnabled,
@@ -75,11 +72,11 @@ export class ErrorTracker<
 
       switch (response.status) {
         case 'fulfilled':
-          console.info();
+          console.info('Success');
           break;
 
         case 'rejected':
-          console.warn();
+          console.warn('Error');
           break;
 
         default:
@@ -88,3 +85,23 @@ export class ErrorTracker<
     }
   }
 }
+
+const logger = new Logger({
+  debug: true,
+  providers: [
+    new TelegramLogProvider({
+      botToken: '7536052994:AAEwD6mzydpgJIi3eYIS2rgJ1OPOSXPPv30',
+      chatId: '-1002536352967',
+    }),
+  ],
+});
+
+logger
+  .error({
+    error: new Error('qwe'),
+    context: {
+      qwe: 'asd',
+    },
+  })
+  .catch(console.error)
+  .then(console.log);

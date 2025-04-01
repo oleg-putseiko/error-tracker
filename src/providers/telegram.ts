@@ -1,8 +1,8 @@
 import {
-  IErrorLoggingOptions,
-  type IErrorCaptureOptions,
-  type IErrorTrackProvider,
-} from '../error-track-provider';
+  IDebugOptions,
+  type IErrorOptions,
+  type ILogProvider,
+} from '../log-provider';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 type FetchOptions = Omit<RequestInit, 'body'> & {
@@ -16,33 +16,31 @@ type SendMessageOptions = {
   text: string;
 };
 
-interface ITelegramErrorCaptureOptions extends IErrorCaptureOptions {
+interface ITelegramErrorOptions extends IErrorOptions {
   botToken?: string;
   chatId?: string;
   title?: string;
 }
 
-type TelegramProviderConfig = IErrorLoggingOptions & {
+type TelegramLogProviderConfig = IDebugOptions & {
   botToken?: string;
   chatId?: string;
 };
 
-export class TelegramErrorTrackProvider
-  implements IErrorTrackProvider<'telegram'>
-{
+export class TelegramLogProvider implements ILogProvider<'telegram'> {
   readonly id = 'telegram';
 
   private readonly _botToken?: string;
   private readonly _chatId?: string;
   private readonly _isDebugEnabled: boolean;
 
-  constructor(config: TelegramProviderConfig) {
+  constructor(config: TelegramLogProviderConfig) {
     this._botToken = config.botToken;
     this._chatId = config.chatId;
     this._isDebugEnabled = config.debug ?? false;
   }
 
-  async capture(options: ITelegramErrorCaptureOptions) {
+  async error(options: ITelegramErrorOptions) {
     const environment = process.env.NODE_ENV || 'development';
     const side = typeof window === 'undefined' ? 'server' : 'client';
 
