@@ -1,10 +1,12 @@
 import {
   IDebugOptions,
+  IInfoOptions,
   type IErrorOptions,
   type ILogProvider,
 } from '../log-provider';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
+
 type FetchOptions = Omit<RequestInit, 'body'> & {
   botToken?: string;
   params?: Record<string, unknown>;
@@ -16,10 +18,19 @@ type SendMessageOptions = {
   text: string;
 };
 
-interface ITelegramErrorOptions extends IErrorOptions {
+interface IRequestOptions {
   botToken?: string;
   chatId?: string;
+}
+
+interface ITelegramInfoOptions extends IInfoOptions, IRequestOptions {
   title?: string;
+  description?: string;
+}
+
+interface ITelegramErrorOptions extends IErrorOptions, IRequestOptions {
+  title?: string;
+  description?: string;
 }
 
 type TelegramLogProviderConfig = IDebugOptions & {
@@ -40,18 +51,37 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     this._isDebugEnabled = config.debug ?? false;
   }
 
-  async error(options: ITelegramErrorOptions) {
-    const environment = process.env.NODE_ENV || 'development';
-    const side = typeof window === 'undefined' ? 'server' : 'client';
+  async info(options: ITelegramInfoOptions) {
+    const { title = 'Information', description, context, ...message } = options;
 
     await this._sendMessage({
-      ...options,
+      ...message,
       text: this._rows(
-        `❗️ ${options.title ?? 'An error occurred'}\n`,
-        this._labelRow('Environment', environment),
-        this._labelRow('Side', side),
-        `\n${this._jsonRow('Error', options.error)}`,
-        options.context ? this._jsonRow('Context', options.context) : null,
+        `ℹ️ ${title}\n`,
+        description && `${description}\n`,
+        `${this._buildMetadataRow()}\n`,
+        context && this._buildContextRow(context),
+      ),
+    });
+  }
+
+  async error(options: ITelegramErrorOptions) {
+    const {
+      title = 'An error occurred',
+      description,
+      error,
+      context,
+      ...message
+    } = options;
+
+    await this._sendMessage({
+      ...message,
+      text: this._rows(
+        `📛 ${title}\n`,
+        description && `${description}\n`,
+        `${this._buildMetadataRow()}\n`,
+        this._buildErrorRow(error),
+        context && this._buildContextRow(context),
       ),
     });
   }
@@ -91,25 +121,43 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     );
   }
 
-  private _jsonRow(label: string, value: unknown) {
+  private _buildErrorRow(error: unknown): string {
+    return this._buildJsonRow('Error', error);
+  }
+
+  private _buildContextRow(context: Record<string, unknown>): string {
+    return this._buildJsonRow('Context', context);
+  }
+
+  private _buildMetadataRow(): string {
+    const environment = process.env.NODE_ENV || 'development';
+    const side = typeof window === 'undefined' ? 'server' : 'client';
+
+    return this._rows(
+      this._buildLabelRow('Environment', environment),
+      this._buildLabelRow('Side', side),
+    );
+  }
+
+  private _buildJsonRow(label: string, value: unknown): string {
     return [
-      this._labelRow(label),
+      this._buildLabelRow(label),
       '```json',
       this._stringify(value),
       '```',
     ].join('\n');
   }
 
-  private _labelRow(title: string, value?: unknown) {
+  private _buildLabelRow(title: string, value?: unknown): string {
     if (value === undefined) return `**${title}:**`;
     return `**${title}:** \`${value}\``;
   }
 
-  private _rows(...rows: (string | null)[]) {
+  private _rows(...rows: unknown[]): string {
     return rows.filter(Boolean).join('\n');
   }
 
-  private _stringifySearchParams(params: Record<string, unknown>) {
+  private _stringifySearchParams(params: Record<string, unknown>): string {
     return encodeURI(
       Object.entries(params)
         .map(([key, value]) => `${key}=${value}`)
@@ -117,7 +165,7 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     );
   }
 
-  private _stringify(value: unknown) {
-    return JSON.stringify(value, Object.getOwnPropertyNames(value));
+  private _stringify(value: unknown): string {
+    return JSON.stringify(value, Object.getOwnPropertyNames(value), 4);
   }
 }

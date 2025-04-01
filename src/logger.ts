@@ -1,4 +1,9 @@
-import { IErrorOptions, IDebugOptions, ILogProvider } from './log-provider';
+import {
+  IErrorOptions,
+  IDebugOptions,
+  ILogProvider,
+  IInfoOptions,
+} from './log-provider';
 import { TelegramLogProvider } from './providers/telegram';
 
 type ExistentialArray<T extends unknown[]> = [...T];
@@ -10,21 +15,29 @@ type Providers<TIds extends string[]> = ExistentialArray<{
 type ProviderOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
+  TLogKey extends 'info' | 'error',
 > = {
   [Index in keyof TProviders]: {
     [Key in TProviders[Index] extends ILogProvider<string>
       ? TProviders[Index]['id']
       : never]: TProviders[Index] extends ILogProvider<string>
-      ? Partial<Parameters<TProviders[Index]['error']>[0]>
+      ? Partial<Parameters<TProviders[Index][TLogKey]>[0]>
       : never;
   };
 }[keyof TProviders];
+
+type InfoOptions<
+  TProviderIds extends string[],
+  TProviders extends Providers<TProviderIds>,
+> = IInfoOptions & {
+  providers?: ProviderOptions<TProviderIds, TProviders, 'info'>;
+};
 
 type ErrorOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
 > = IErrorOptions & {
-  providerOptions?: ProviderOptions<TProviderIds, TProviders>;
+  providers?: ProviderOptions<TProviderIds, TProviders, 'error'>;
 };
 
 type ErrorTrackerConfig<
@@ -46,43 +59,33 @@ export class Logger<
     this._isDebugEnabled = config.debug ?? false;
   }
 
-  async error(options: ErrorOptions<TProviderIds, TProviders>) {
-    const { error, context, providerOptions } = options;
+  async info(options: InfoOptions<TProviderIds, TProviders>) {
+    const { context, providers } = options;
 
-    const responses = await Promise.allSettled(
+    await Promise.allSettled(
+      this._providers.map((provider) =>
+        provider.info({
+          context,
+          debug: this._isDebugEnabled,
+          ...providers?.[provider.id as keyof typeof providers],
+        }),
+      ),
+    );
+  }
+
+  async error(options: ErrorOptions<TProviderIds, TProviders>) {
+    const { error, context, providers } = options;
+
+    await Promise.allSettled(
       this._providers.map((provider) =>
         provider.error({
           error,
           context,
           debug: this._isDebugEnabled,
-          ...providerOptions?.[provider.id as keyof typeof providerOptions],
+          ...providers?.[provider.id as keyof typeof providers],
         }),
       ),
     );
-
-    for (let index = 0; index < responses.length; index++) {
-      const response = responses[index];
-      const provider = this._providers[index];
-      const options =
-        providerOptions?.[provider.id as keyof typeof providerOptions];
-
-      const shouldLog = options?.debug ?? this._isDebugEnabled;
-
-      if (!shouldLog) continue;
-
-      switch (response.status) {
-        case 'fulfilled':
-          console.info('Success');
-          break;
-
-        case 'rejected':
-          console.warn('Error');
-          break;
-
-        default:
-          break;
-      }
-    }
   }
 }
 
@@ -96,12 +99,28 @@ const logger = new Logger({
   ],
 });
 
-logger
-  .error({
-    error: new Error('qwe'),
-    context: {
-      qwe: 'asd',
+logger.error({
+  error: new Error('qwe'),
+  context: {
+    qwe: 'asd',
+  },
+  providers: {
+    telegram: {
+      title: 'Qwe error',
     },
-  })
-  .catch(console.error)
-  .then(console.log);
+  },
+});
+
+logger.info({
+  context: {
+    a: 'qwe',
+  },
+  providers: {
+    telegram: {
+      description: 'Info message',
+      context: {
+        b: 'qwe',
+      },
+    },
+  },
+});
