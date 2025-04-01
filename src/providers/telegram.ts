@@ -1,6 +1,8 @@
 import {
   IDebugOptions,
   IInfoOptions,
+  ILogOptions,
+  ISuccessOptions,
   IWarnOptions,
   type IErrorOptions,
   type ILogProvider,
@@ -24,7 +26,7 @@ interface IRequestOptions {
   chatId?: string;
 }
 
-interface ITelegramLogOptions extends IInfoOptions, IRequestOptions {
+interface ITelegramLogOptions extends ILogOptions, IRequestOptions {
   title?: string;
   description?: string;
 }
@@ -40,6 +42,11 @@ interface ITelegramWarnOptions extends IWarnOptions, IRequestOptions {
 }
 
 interface ITelegramErrorOptions extends IErrorOptions, IRequestOptions {
+  title?: string;
+  description?: string;
+}
+
+interface ITelegramSuccessOptions extends ISuccessOptions, IRequestOptions {
   title?: string;
   description?: string;
 }
@@ -120,6 +127,20 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
         description && `${description}\n`,
         `${this._buildMetadataRow()}\n`,
         this._buildErrorRow(error),
+        context && this._buildContextRow(context),
+      ),
+    });
+  }
+
+  async success(options: ITelegramSuccessOptions) {
+    const { title = 'Success', description, context, ...message } = options;
+
+    await this._sendMessage({
+      ...message,
+      text: this._rows(
+        `✅ ${title}\n`,
+        description && `${description}\n`,
+        `${this._buildMetadataRow()}\n`,
         context && this._buildContextRow(context),
       ),
     });

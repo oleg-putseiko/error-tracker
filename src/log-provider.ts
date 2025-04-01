@@ -19,6 +19,10 @@ export interface IErrorOptions extends IDebugOptions {
   context?: Record<string, unknown>;
 }
 
+export interface ISuccessOptions extends IDebugOptions {
+  context?: Record<string, unknown>;
+}
+
 export interface ILogProvider<TId extends string> {
   readonly id: TId;
 
@@ -26,4 +30,5 @@ export interface ILogProvider<TId extends string> {
   info(options: IInfoOptions): void | Promise<void>;
   warn(options: IWarnOptions): void | Promise<void>;
   error(options: IErrorOptions): void | Promise<void>;
+  success(options: ISuccessOptions): void | Promise<void>;
 }
