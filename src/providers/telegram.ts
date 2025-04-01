@@ -24,6 +24,11 @@ interface IRequestOptions {
   chatId?: string;
 }
 
+interface ITelegramLogOptions extends IInfoOptions, IRequestOptions {
+  title?: string;
+  description?: string;
+}
+
 interface ITelegramInfoOptions extends IInfoOptions, IRequestOptions {
   title?: string;
   description?: string;
@@ -55,6 +60,20 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     this._botToken = config.botToken;
     this._chatId = config.chatId;
     this._isDebugEnabled = config.debug ?? false;
+  }
+
+  async log(options: ITelegramLogOptions) {
+    const { title, description, context, ...message } = options;
+
+    await this._sendMessage({
+      ...message,
+      text: this._rows(
+        title && `${title}\n`,
+        description && `${description}\n`,
+        `${this._buildMetadataRow()}\n`,
+        context && this._buildContextRow(context),
+      ),
+    });
   }
 
   async info(options: ITelegramInfoOptions) {

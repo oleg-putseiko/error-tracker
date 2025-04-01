@@ -4,6 +4,7 @@ import {
   ILogProvider,
   IInfoOptions,
   IWarnOptions,
+  ILogOptions,
 } from './log-provider';
 
 type ExistentialArray<T extends unknown[]> = [...T];
@@ -15,7 +16,7 @@ type Providers<TIds extends string[]> = ExistentialArray<{
 type ProviderOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
-  TLogKey extends 'info' | 'warn' | 'error',
+  TLogKey extends 'log' | 'info' | 'warn' | 'error',
 > = {
   [Index in keyof TProviders]: {
     [Key in TProviders[Index] extends ILogProvider<string>
@@ -25,6 +26,13 @@ type ProviderOptions<
       : never;
   };
 }[keyof TProviders];
+
+type LogOptions<
+  TProviderIds extends string[],
+  TProviders extends Providers<TProviderIds>,
+> = ILogOptions & {
+  providers?: ProviderOptions<TProviderIds, TProviders, 'log'>;
+};
 
 type InfoOptions<
   TProviderIds extends string[],
@@ -64,6 +72,20 @@ export class Logger<
   constructor(config: ErrorTrackerConfig<TProviderIds, TProviders>) {
     this._providers = config.providers;
     this._isDebugEnabled = config.debug ?? false;
+  }
+
+  async log(options: LogOptions<TProviderIds, TProviders>) {
+    const { context, providers } = options;
+
+    await Promise.allSettled(
+      this._providers.map((provider) =>
+        provider.log({
+          context,
+          debug: this._isDebugEnabled,
+          ...providers?.[provider.id as keyof typeof providers],
+        }),
+      ),
+    );
   }
 
   async info(options: InfoOptions<TProviderIds, TProviders>) {
