@@ -9,31 +9,38 @@ import {
   IDebugOptions,
 } from './providers/base';
 
+// TODO: change the console log kind colors in the browser
+
 type ExistentialArray<T extends unknown[]> = [...T];
 
 type Providers<TIds extends string[]> = ExistentialArray<{
   [_Index in keyof TIds]: ILogProvider<TIds[_Index]>;
 }>;
 
+type CommonProviderOptions = {
+  enabled?: boolean;
+};
+
 type ProviderOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
   TLogKey extends 'debug' | 'log' | 'info' | 'warn' | 'error' | 'success',
-> = {
-  [_Index in keyof TProviders]: {
-    [_Key in TProviders[_Index] extends ILogProvider<string>
-      ? TProviders[_Index]['id']
-      : never]: TProviders[_Index] extends ILogProvider<string>
-      ? TProviders[_Index][TLogKey] extends infer _Method
-        ? _Method extends undefined
-          ? never
-          : _Method extends (options: infer _Options) => any
-            ? Partial<_Options>
-            : never
-        : never
-      : never;
-  };
-}[keyof TProviders];
+> = CommonProviderOptions &
+  {
+    [_Index in keyof TProviders]: {
+      [_Id in TProviders[_Index] extends ILogProvider<string>
+        ? TProviders[_Index]['id']
+        : never]: TProviders[_Index] extends ILogProvider<string>
+        ? TProviders[_Index][TLogKey] extends infer _Method
+          ? _Method extends undefined
+            ? never
+            : _Method extends (options: infer _Options) => any
+              ? Partial<_Options>
+              : never
+          : never
+        : never;
+    };
+  }[number];
 
 type DebugOptions<
   TProviderIds extends string[],
@@ -82,16 +89,21 @@ type ErrorTrackerConfig<
   TProviders extends Providers<TProviderIds> = Providers<TProviderIds>,
 > = {
   providers: TProviders;
+  enabled?: boolean;
 };
+
+const IS_WINDOW_DEFINED = typeof window !== 'undefined';
 
 export class Logger<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
 > {
   private readonly _providers: TProviders;
+  private readonly _isEnabled: boolean;
 
   constructor(config: ErrorTrackerConfig<TProviderIds, TProviders>) {
     this._providers = config.providers;
+    this._isEnabled = config.enabled ?? true;
   }
 
   async debug(options: DebugOptions<TProviderIds, TProviders>) {
@@ -99,14 +111,17 @@ export class Logger<
 
     await Promise.allSettled(
       this._providers.map((provider) => {
-        const providerOptions =
-          providers?.[provider.id as keyof typeof providers];
+        const providerOptions:
+          | (CommonProviderOptions & IDebugOptions)
+          | undefined = providers?.[provider.id as keyof typeof providers];
 
-        return provider.debug?.({
-          context,
-          labels: this._getDefaultLabels(),
-          ...(providerOptions ?? {}),
-        });
+        if (providerOptions?.enabled ?? this._isEnabled) {
+          return provider.debug?.({
+            context,
+            labels: this._getDefaultLabels(),
+            ...(providerOptions ?? {}),
+          });
+        }
       }),
     );
   }
@@ -116,14 +131,17 @@ export class Logger<
 
     await Promise.allSettled(
       this._providers.map((provider) => {
-        const providerOptions =
-          providers?.[provider.id as keyof typeof providers];
+        const providerOptions:
+          | (CommonProviderOptions & ILogOptions)
+          | undefined = providers?.[provider.id as keyof typeof providers];
 
-        return provider.log({
-          context,
-          labels: this._getDefaultLabels(),
-          ...(providerOptions ?? {}),
-        });
+        if (providerOptions?.enabled ?? this._isEnabled) {
+          return provider.log({
+            context,
+            labels: this._getDefaultLabels(),
+            ...(providerOptions ?? {}),
+          });
+        }
       }),
     );
   }
@@ -133,14 +151,17 @@ export class Logger<
 
     await Promise.allSettled(
       this._providers.map((provider) => {
-        const providerOptions =
-          providers?.[provider.id as keyof typeof providers];
+        const providerOptions:
+          | (CommonProviderOptions & IInfoOptions)
+          | undefined = providers?.[provider.id as keyof typeof providers];
 
-        return provider.info({
-          context,
-          labels: this._getDefaultLabels(),
-          ...(providerOptions ?? {}),
-        });
+        if (providerOptions?.enabled ?? this._isEnabled) {
+          return provider.info({
+            context,
+            labels: this._getDefaultLabels(),
+            ...(providerOptions ?? {}),
+          });
+        }
       }),
     );
   }
@@ -150,14 +171,17 @@ export class Logger<
 
     await Promise.allSettled(
       this._providers.map((provider) => {
-        const providerOptions =
-          providers?.[provider.id as keyof typeof providers];
+        const providerOptions:
+          | (CommonProviderOptions & IWarnOptions)
+          | undefined = providers?.[provider.id as keyof typeof providers];
 
-        return provider.warn({
-          context,
-          labels: this._getDefaultLabels(),
-          ...(providerOptions ?? {}),
-        });
+        if (providerOptions?.enabled ?? this._isEnabled) {
+          return provider.warn({
+            context,
+            labels: this._getDefaultLabels(),
+            ...(providerOptions ?? {}),
+          });
+        }
       }),
     );
   }
@@ -167,15 +191,18 @@ export class Logger<
 
     await Promise.allSettled(
       this._providers.map((provider) => {
-        const providerOptions =
-          providers?.[provider.id as keyof typeof providers];
+        const providerOptions = providers?.[
+          provider.id as keyof typeof providers
+        ] as (CommonProviderOptions & IErrorOptions) | undefined;
 
-        return provider.error({
-          error,
-          context,
-          labels: this._getDefaultLabels(),
-          ...(providerOptions ?? {}),
-        });
+        if (providerOptions?.enabled ?? this._isEnabled) {
+          return provider.error({
+            error,
+            context,
+            labels: this._getDefaultLabels(),
+            ...(providerOptions ?? {}),
+          });
+        }
       }),
     );
   }
@@ -185,14 +212,17 @@ export class Logger<
 
     await Promise.allSettled(
       this._providers.map((provider) => {
-        const providerOptions =
-          providers?.[provider.id as keyof typeof providers];
+        const providerOptions:
+          | (CommonProviderOptions & ISuccessOptions)
+          | undefined = providers?.[provider.id as keyof typeof providers];
 
-        return provider.success({
-          context,
-          labels: this._getDefaultLabels(),
-          ...(providerOptions ?? {}),
-        });
+        if (providerOptions?.enabled ?? this._isEnabled) {
+          return provider.success({
+            context,
+            labels: this._getDefaultLabels(),
+            ...(providerOptions ?? {}),
+          });
+        }
       }),
     );
   }
@@ -200,10 +230,7 @@ export class Logger<
   private _getDefaultLabels(): LogLabel[] {
     return [
       { name: 'Environment', value: process.env.NODE_ENV || 'development' },
-      {
-        name: 'Side',
-        value: typeof window === 'undefined' ? 'server' : 'client',
-      },
+      { name: 'Side', value: IS_WINDOW_DEFINED ? 'client' : 'server' },
     ];
   }
 }
