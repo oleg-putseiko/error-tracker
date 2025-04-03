@@ -12,7 +12,7 @@ import {
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
 type FetchOptions = Omit<RequestInit, 'body'> & {
-  domain?: string;
+  baseUrl?: string;
   apiKey?: string;
   body?: Record<string, unknown>;
 };
@@ -55,7 +55,7 @@ interface IJetbrainsSpaceSuccessOptions
 }
 
 type JetbrainsSpaceLogProviderConfig = IDebugOptions & {
-  domain?: string;
+  baseUrl?: string;
   apiKey?: string;
   channelName?: string;
 };
@@ -65,13 +65,13 @@ export class JetbrainsSpaceLogProvider
 {
   readonly id = 'jetbrains_space';
 
-  private readonly _domain?: string;
+  private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
   private readonly _channelName?: string;
   private readonly _isDebugEnabled: boolean;
 
   constructor(config: JetbrainsSpaceLogProviderConfig) {
-    this._domain = config.domain;
+    this._baseUrl = config.baseUrl;
     this._apiKey = config.apiKey;
     this._channelName = config.channelName;
     this._isDebugEnabled = config.debug ?? false;
@@ -195,18 +195,18 @@ export class JetbrainsSpaceLogProvider
   }
 
   private async _fetch(url: string, options?: FetchOptions) {
-    const domain = options?.domain ?? this._domain;
+    const baseUrl = options?.baseUrl ?? this._baseUrl;
     const apiKey = options?.apiKey ?? this._apiKey;
 
-    if (!domain) {
-      throw new TypeError('Jetbrains Space organization domain is not defined');
+    if (!baseUrl) {
+      throw new TypeError('Jetbrains Space base URL is not defined');
     }
 
     if (!apiKey) {
       throw new TypeError('Jetbrains Space API key is not defined');
     }
 
-    return await fetch(`https://${domain}/api/http${url}`, {
+    return await fetch(`${baseUrl}/api/http${url}`, {
       ...options,
       body: options?.body ? JSON.stringify(options.body) : undefined,
       headers: {
