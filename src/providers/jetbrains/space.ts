@@ -1,5 +1,4 @@
 import {
-  IDebuggingOptions,
   IInfoOptions,
   ILogOptions,
   ISuccessOptions,
@@ -54,7 +53,7 @@ interface IJetbrainsSpaceSuccessOptions
   description?: string;
 }
 
-type JetbrainsSpaceLogProviderConfig = IDebuggingOptions & {
+type JetbrainsSpaceLogProviderConfig = {
   baseUrl?: string;
   apiKey?: string;
   channelName?: string;
@@ -68,13 +67,11 @@ export class JetbrainsSpaceLogProvider
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
   private readonly _channelName?: string;
-  private readonly _isDebugEnabled: boolean;
 
   constructor(config: JetbrainsSpaceLogProviderConfig) {
     this._baseUrl = config.baseUrl;
     this._apiKey = config.apiKey;
     this._channelName = config.channelName;
-    this._isDebugEnabled = config.debug ?? false;
   }
 
   async log(options: IJetbrainsSpaceLogOptions) {

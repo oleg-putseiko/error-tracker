@@ -1,5 +1,4 @@
 import {
-  IDebuggingOptions,
   IDebugOptions,
   IInfoOptions,
   ILogOptions,
@@ -68,20 +67,12 @@ interface IConsoleSuccessOptions extends ISuccessOptions {
   text: string;
 }
 
-type ConsoleLogProviderConfig = IDebuggingOptions;
-
 const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
 const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
 export class ConsoleLogProvider implements ILogProvider<'console'> {
   readonly id = 'console';
-
-  private readonly _isDebugEnabled: boolean;
-
-  constructor(config?: ConsoleLogProviderConfig) {
-    this._isDebugEnabled = config?.debug ?? false;
-  }
 
   debug(options: IConsoleDebugOptions) {
     const { labels, text, context } = options;
@@ -298,7 +289,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
       (acc, item) => `${acc}[${item.value}]`,
       '',
     );
-    const labelStyles = `color: rgb(161, 161, 161)`;
+    const labelStyles = 'color: rgb(161, 161, 161)';
 
     if (kind !== undefined) {
       const kindStyles = [

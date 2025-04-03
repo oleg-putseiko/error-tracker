@@ -1,5 +1,4 @@
 import {
-  IDebuggingOptions,
   IInfoOptions,
   ILogOptions,
   ISuccessOptions,
@@ -52,7 +51,7 @@ interface ITelegramSuccessOptions extends ISuccessOptions, IRequestOptions {
   description?: string;
 }
 
-type TelegramLogProviderConfig = IDebuggingOptions & {
+type TelegramLogProviderConfig = {
   botToken?: string;
   chatId?: string;
 };
@@ -62,12 +61,10 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
 
   private readonly _botToken?: string;
   private readonly _chatId?: string;
-  private readonly _isDebugEnabled: boolean;
 
   constructor(config: TelegramLogProviderConfig) {
     this._botToken = config.botToken;
     this._chatId = config.chatId;
-    this._isDebugEnabled = config.debug ?? false;
   }
 
   async log(options: ITelegramLogOptions) {

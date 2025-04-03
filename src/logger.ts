@@ -1,6 +1,5 @@
 import {
   IErrorOptions,
-  IDebuggingOptions,
   ILogProvider,
   IInfoOptions,
   IWarnOptions,
@@ -81,7 +80,7 @@ type SuccessOptions<
 type ErrorTrackerConfig<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds> = Providers<TProviderIds>,
-> = IDebuggingOptions & {
+> = {
   providers: TProviders;
 };
 
@@ -90,11 +89,9 @@ export class Logger<
   TProviders extends Providers<TProviderIds>,
 > {
   private readonly _providers: TProviders;
-  private readonly _isDebugEnabled: boolean;
 
   constructor(config: ErrorTrackerConfig<TProviderIds, TProviders>) {
     this._providers = config.providers;
-    this._isDebugEnabled = config.debug ?? false;
   }
 
   async debug(options: DebugOptions<TProviderIds, TProviders>) {
@@ -107,7 +104,6 @@ export class Logger<
 
         return provider.debug?.({
           context,
-          debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
           ...(providerOptions ?? {}),
         });
@@ -125,7 +121,6 @@ export class Logger<
 
         return provider.log({
           context,
-          debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
           ...(providerOptions ?? {}),
         });
@@ -143,7 +138,6 @@ export class Logger<
 
         return provider.info({
           context,
-          debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
           ...(providerOptions ?? {}),
         });
@@ -161,7 +155,6 @@ export class Logger<
 
         return provider.warn({
           context,
-          debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
           ...(providerOptions ?? {}),
         });
@@ -180,7 +173,6 @@ export class Logger<
         return provider.error({
           error,
           context,
-          debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
           ...(providerOptions ?? {}),
         });
@@ -198,7 +190,6 @@ export class Logger<
 
         return provider.success({
           context,
-          debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
           ...(providerOptions ?? {}),
         });
