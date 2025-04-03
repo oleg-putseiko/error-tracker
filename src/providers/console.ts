@@ -4,6 +4,7 @@ import {
   ILogOptions,
   ISuccessOptions,
   IWarnOptions,
+  LogLabel,
   type IErrorOptions,
   type ILogProvider,
 } from '../log-provider';
@@ -31,13 +32,14 @@ type LabelStyles = {
   server: ServerLabelStyles;
 };
 
-type LabelDetails = {
+type LogKindDetails = {
   value: string;
   styles: LabelStyles;
 };
 
 type TitleMessagesData = {
-  label?: LabelDetails;
+  kind?: LogKindDetails;
+  labels?: LogLabel[];
 };
 
 interface IConsoleLogOptions extends ILogOptions {
@@ -66,7 +68,6 @@ const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
 const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
-// TODO: amend text displaying
 export class ConsoleLogProvider implements ILogProvider<'console'> {
   readonly id = 'console';
 
@@ -77,9 +78,9 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
   }
 
   async log(options: IConsoleLogOptions) {
-    const { text, context } = options;
+    const { labels, text, context } = options;
 
-    const titleMessages = this._buildTitleMessages({});
+    const titleMessages = this._buildTitleMessages({ labels });
     const contextMessages = context ? this._buildContextMessages(context) : [];
 
     const messages = this._messages(
@@ -93,10 +94,10 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
   }
 
   async info(options: IConsoleInfoOptions) {
-    const { text, context } = options;
+    const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({
-      label: {
+      kind: {
         value: 'info',
         styles: {
           client: {
@@ -108,6 +109,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
           },
         },
       },
+      labels,
     });
 
     const contextMessages = context ? this._buildContextMessages(context) : [];
@@ -123,10 +125,10 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
   }
 
   async warn(options: IConsoleWarnOptions) {
-    const { text, context } = options;
+    const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({
-      label: {
+      kind: {
         value: 'warning',
         styles: {
           client: {
@@ -138,6 +140,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
           },
         },
       },
+      labels,
     });
 
     const contextMessages = context ? this._buildContextMessages(context) : [];
@@ -153,10 +156,10 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
   }
 
   async error(options: IConsoleErrorOptions) {
-    const { text, error, context } = options;
+    const { labels, text, error, context } = options;
 
     const titleMessages = this._buildTitleMessages({
-      label: {
+      kind: {
         value: 'error',
         styles: {
           client: {
@@ -168,6 +171,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
           },
         },
       },
+      labels,
     });
 
     const errorMessages = this._buildErrorMessages(error);
@@ -186,10 +190,10 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
   }
 
   async success(options: IConsoleSuccessOptions) {
-    const { text, context } = options;
+    const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({
-      label: {
+      kind: {
         value: 'success',
         styles: {
           client: {
@@ -201,6 +205,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
           },
         },
       },
+      labels,
     });
 
     const contextMessages = context ? this._buildContextMessages(context) : [];
@@ -222,55 +227,56 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
   }
 
   private _buildTerminalTitleMessages(data: TitleMessagesData): string[] {
-    const { label } = data;
+    const { kind, labels } = data;
 
-    const metadata = this._getMetadata();
-    const metadataMessage = this._buildColoredTerminalMessage(
-      `[${metadata.environment}][${metadata.side}]:`,
-      TerminalTextColor.Gray,
+    const stringifiedLabels = labels?.reduce(
+      (acc, item) => `${acc}[${item.value}]`,
+      '',
     );
+    const labelsMessage = stringifiedLabels
+      ? this._buildColoredTerminalMessage(
+          `${stringifiedLabels}:`,
+          TerminalTextColor.Gray,
+        )
+      : null;
 
-    if (label !== undefined) {
-      const labelMessage = this._buildColoredTerminalMessage(
-        label.value,
-        label.styles.server.textColor,
+    if (kind !== undefined) {
+      const kindMessage = this._buildColoredTerminalMessage(
+        kind.value,
+        kind.styles.server.textColor,
       );
 
-      return [`${labelMessage} ${metadataMessage}`];
+      return labelsMessage
+        ? [`${kindMessage} ${labelsMessage}`]
+        : [`${kindMessage}:`];
     }
 
-    return [metadataMessage];
+    return labelsMessage ? [labelsMessage] : [];
   }
 
   private _buildClientTitleMessages(data: TitleMessagesData): string[] {
-    const { label } = data;
+    const { kind, labels } = data;
 
-    const metadata = this._getMetadata();
-    const metadataStyles = `color: rgb(161, 161, 161)`;
+    const stringifiedLabels = labels?.reduce(
+      (acc, item) => `${acc}[${item.value}]`,
+      '',
+    );
+    const labelStyles = `color: rgb(161, 161, 161)`;
 
-    if (label !== undefined) {
-      const labelStyles = [
-        `background-color: ${label.styles.client.backgroundColor}`,
-        `border: 1px solid ${label.styles.client.borderColor}`,
+    if (kind !== undefined) {
+      const kindStyles = [
+        `background-color: ${kind.styles.client.backgroundColor}`,
+        `border: 1px solid ${kind.styles.client.borderColor}`,
         'border-radius: 5px',
         'padding: 2px 4px',
       ].join(';');
 
-      return [
-        `%c${label.value} %c[${metadata.environment}][${metadata.side}]:`,
-        labelStyles,
-        metadataStyles,
-      ];
+      return stringifiedLabels !== undefined
+        ? [`%c${kind.value} %c${stringifiedLabels}:`, kindStyles, labelStyles]
+        : [`%c${kind.value}:`, kindStyles];
     }
 
-    return [`%c[${metadata.environment}][${metadata.side}]:`, metadataStyles];
-  }
-
-  private _getMetadata() {
-    const environment = process.env.NODE_ENV || 'development';
-    const side = typeof window === 'undefined' ? 'server' : 'client';
-
-    return { environment, side };
+    return [`%c${stringifiedLabels}:`, labelStyles];
   }
 
   private _buildErrorMessages(error: unknown): string[] {

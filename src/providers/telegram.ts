@@ -4,6 +4,7 @@ import {
   ILogOptions,
   ISuccessOptions,
   IWarnOptions,
+  LogLabel,
   type IErrorOptions,
   type ILogProvider,
 } from '../log-provider';
@@ -70,42 +71,54 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
   }
 
   async log(options: ITelegramLogOptions) {
-    const { title, description, context, ...message } = options;
+    const { title, description, context, labels, ...message } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         title && `${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
   }
 
   async info(options: ITelegramInfoOptions) {
-    const { title = 'Information', description, context, ...message } = options;
+    const {
+      title = 'Information',
+      description,
+      labels,
+      context,
+      ...message
+    } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         `ℹ️ ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
   }
 
   async warn(options: ITelegramWarnOptions) {
-    const { title = 'Warning', description, context, ...message } = options;
+    const {
+      title = 'Warning',
+      description,
+      labels,
+      context,
+      ...message
+    } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         `⚠️ ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
@@ -115,6 +128,7 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     const {
       title = 'An error occurred',
       description,
+      labels,
       error,
       context,
       ...message
@@ -125,7 +139,7 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
       text: this._rows(
         `📛 ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         this._buildErrorRow(error),
         context && this._buildContextRow(context),
       ),
@@ -133,14 +147,20 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
   }
 
   async success(options: ITelegramSuccessOptions) {
-    const { title = 'Success', description, context, ...message } = options;
+    const {
+      title = 'Success',
+      description,
+      labels,
+      context,
+      ...message
+    } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         `✅ ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
@@ -187,13 +207,9 @@ export class TelegramLogProvider implements ILogProvider<'telegram'> {
     return this._buildJsonRow('Context', context);
   }
 
-  private _buildMetadataRow(): string {
-    const environment = process.env.NODE_ENV || 'development';
-    const side = typeof window === 'undefined' ? 'server' : 'client';
-
+  private _buildLabelsRow(labels: LogLabel[]): string {
     return this._rows(
-      this._buildLabelRow('Environment', environment),
-      this._buildLabelRow('Side', side),
+      ...labels.map((label) => this._buildLabelRow(label.name, label.value)),
     );
   }
 

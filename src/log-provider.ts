@@ -1,27 +1,25 @@
+export type LogLabel = { name: string; value: string };
+
 export interface IDebugOptions {
   debug?: boolean;
 }
 
-export interface ILogOptions extends IDebugOptions {
+export interface IContextualOptions {
+  labels?: LogLabel[];
   context?: Record<string, unknown>;
 }
 
-export interface IInfoOptions extends IDebugOptions {
-  context?: Record<string, unknown>;
-}
+export interface ILogOptions extends IDebugOptions, IContextualOptions {}
 
-export interface IWarnOptions extends IDebugOptions {
-  context?: Record<string, unknown>;
-}
+export interface IInfoOptions extends IDebugOptions, IContextualOptions {}
 
-export interface IErrorOptions extends IDebugOptions {
+export interface IWarnOptions extends IDebugOptions, IContextualOptions {}
+
+export interface IErrorOptions extends IDebugOptions, IContextualOptions {
   error: unknown;
-  context?: Record<string, unknown>;
 }
 
-export interface ISuccessOptions extends IDebugOptions {
-  context?: Record<string, unknown>;
-}
+export interface ISuccessOptions extends IDebugOptions, IContextualOptions {}
 
 export interface ILogProvider<TId extends string> {
   readonly id: TId;

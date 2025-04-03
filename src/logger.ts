@@ -6,6 +6,7 @@ import {
   IWarnOptions,
   ILogOptions,
   ISuccessOptions,
+  LogLabel,
 } from './log-provider';
 
 type ExistentialArray<T extends unknown[]> = [...T];
@@ -86,13 +87,17 @@ export class Logger<
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) =>
-        provider.log({
+      this._providers.map((provider) => {
+        const providerOptions =
+          providers?.[provider.id as keyof typeof providers];
+
+        return provider.log({
           context,
           debug: this._isDebugEnabled,
-          ...providers?.[provider.id as keyof typeof providers],
-        }),
-      ),
+          labels: this._getDefaultLabels(),
+          ...providerOptions,
+        });
+      }),
     );
   }
 
@@ -100,13 +105,17 @@ export class Logger<
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) =>
-        provider.info({
+      this._providers.map((provider) => {
+        const providerOptions =
+          providers?.[provider.id as keyof typeof providers];
+
+        return provider.info({
           context,
           debug: this._isDebugEnabled,
-          ...providers?.[provider.id as keyof typeof providers],
-        }),
-      ),
+          labels: this._getDefaultLabels(),
+          ...providerOptions,
+        });
+      }),
     );
   }
 
@@ -114,13 +123,17 @@ export class Logger<
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) =>
-        provider.warn({
+      this._providers.map((provider) => {
+        const providerOptions =
+          providers?.[provider.id as keyof typeof providers];
+
+        return provider.warn({
           context,
           debug: this._isDebugEnabled,
-          ...providers?.[provider.id as keyof typeof providers],
-        }),
-      ),
+          labels: this._getDefaultLabels(),
+          ...providerOptions,
+        });
+      }),
     );
   }
 
@@ -128,14 +141,18 @@ export class Logger<
     const { error, context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) =>
-        provider.error({
+      this._providers.map((provider) => {
+        const providerOptions =
+          providers?.[provider.id as keyof typeof providers];
+
+        return provider.error({
           error,
           context,
           debug: this._isDebugEnabled,
-          ...providers?.[provider.id as keyof typeof providers],
-        }),
-      ),
+          labels: this._getDefaultLabels(),
+          ...providerOptions,
+        });
+      }),
     );
   }
 
@@ -143,13 +160,27 @@ export class Logger<
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) =>
-        provider.success({
+      this._providers.map((provider) => {
+        const providerOptions =
+          providers?.[provider.id as keyof typeof providers];
+
+        return provider.success({
           context,
           debug: this._isDebugEnabled,
-          ...providers?.[provider.id as keyof typeof providers],
-        }),
-      ),
+          labels: this._getDefaultLabels(),
+          ...providerOptions,
+        });
+      }),
     );
+  }
+
+  private _getDefaultLabels(): LogLabel[] {
+    return [
+      { name: 'Environment', value: process.env.NODE_ENV || 'development' },
+      {
+        name: 'Side',
+        value: typeof window === 'undefined' ? 'server' : 'client',
+      },
+    ];
   }
 }

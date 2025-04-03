@@ -4,6 +4,7 @@ import {
   ILogOptions,
   ISuccessOptions,
   IWarnOptions,
+  LogLabel,
   type IErrorOptions,
   type ILogProvider,
 } from '../../log-provider';
@@ -77,42 +78,54 @@ export class JetbrainsSpaceLogProvider
   }
 
   async log(options: IJetbrainsSpaceLogOptions) {
-    const { title, description, context, ...message } = options;
+    const { title, description, labels, context, ...message } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         title && `${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
   }
 
   async info(options: IJetbrainsSpaceInfoOptions) {
-    const { title = 'Information', description, context, ...message } = options;
+    const {
+      title = 'Information',
+      description,
+      labels,
+      context,
+      ...message
+    } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         `:information_source: ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
   }
 
   async warn(options: IJetbrainsSpaceWarnOptions) {
-    const { title = 'Warning', description, context, ...message } = options;
+    const {
+      title = 'Warning',
+      description,
+      labels,
+      context,
+      ...message
+    } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         `:warning: ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
@@ -122,6 +135,7 @@ export class JetbrainsSpaceLogProvider
     const {
       title = 'An error occurred',
       description,
+      labels,
       error,
       context,
       ...message
@@ -132,7 +146,7 @@ export class JetbrainsSpaceLogProvider
       text: this._rows(
         `:name_badge: ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         `${this._buildErrorRow(error)}\n`,
         context && this._buildContextRow(context),
       ),
@@ -140,14 +154,20 @@ export class JetbrainsSpaceLogProvider
   }
 
   async success(options: IJetbrainsSpaceSuccessOptions) {
-    const { title = 'Success', description, context, ...message } = options;
+    const {
+      title = 'Success',
+      labels,
+      description,
+      context,
+      ...message
+    } = options;
 
     await this._sendMessage({
       ...message,
       text: this._rows(
         `:white_check_mark: ${title}\n`,
         description && `${description}\n`,
-        `${this._buildMetadataRow()}\n`,
+        labels && `${this._buildLabelsRow(labels)}\n`,
         context && this._buildContextRow(context),
       ),
     });
@@ -206,13 +226,9 @@ export class JetbrainsSpaceLogProvider
     return this._buildJsonRow('Context', context);
   }
 
-  private _buildMetadataRow(): string {
-    const environment = process.env.NODE_ENV || 'development';
-    const side = typeof window === 'undefined' ? 'server' : 'client';
-
+  private _buildLabelsRow(labels: LogLabel[]): string {
     return this._rows(
-      this._buildLabelRow('Environment', environment),
-      this._buildLabelRow('Side', side),
+      ...labels.map((label) => this._buildLabelRow(label.name, label.value)),
     );
   }
 
