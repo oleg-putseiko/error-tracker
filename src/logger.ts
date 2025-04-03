@@ -85,7 +85,7 @@ export class Logger<
   async log(options: LogOptions<TProviderIds, TProviders>) {
     const { context, providers } = options;
 
-    const results = await Promise.allSettled(
+    await Promise.allSettled(
       this._providers.map((provider) =>
         provider.log({
           context,
@@ -94,8 +94,6 @@ export class Logger<
         }),
       ),
     );
-
-    console.log({ results });
   }
 
   async info(options: InfoOptions<TProviderIds, TProviders>) {
