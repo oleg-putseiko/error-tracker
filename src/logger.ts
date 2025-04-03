@@ -7,7 +7,7 @@ import {
   ILogOptions,
   ISuccessOptions,
   LogLabel,
-} from './log-provider';
+} from './providers/base';
 
 type ExistentialArray<T extends unknown[]> = [...T];
 

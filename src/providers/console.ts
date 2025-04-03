@@ -7,7 +7,7 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from '../log-provider';
+} from './base';
 
 enum TerminalTextColor {
   Unset = '\x1b[0m',

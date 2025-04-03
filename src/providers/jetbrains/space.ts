@@ -7,7 +7,7 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from '../../log-provider';
+} from '../base';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
@@ -194,7 +194,7 @@ export class JetbrainsSpaceLogProvider
     });
   }
 
-  private async _fetch(url: string, options?: FetchOptions) {
+  private async _fetch(path: string, options?: FetchOptions) {
     const baseUrl = options?.baseUrl ?? this._baseUrl;
     const apiKey = options?.apiKey ?? this._apiKey;
 
@@ -206,7 +206,7 @@ export class JetbrainsSpaceLogProvider
       throw new TypeError('Jetbrains Space API key is not defined');
     }
 
-    return await fetch(`${baseUrl}/api/http${url}`, {
+    return await fetch(`${baseUrl}/api/http${path}`, {
       ...options,
       body: options?.body ? JSON.stringify(options.body) : undefined,
       headers: {

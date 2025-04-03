@@ -7,7 +7,7 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from '../log-provider';
+} from './base';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
