@@ -1,4 +1,5 @@
 import {
+  IDebuggingOptions,
   IDebugOptions,
   IInfoOptions,
   ILogOptions,
@@ -10,12 +11,13 @@ import {
 } from './base';
 
 enum TerminalTextColor {
-  Unset = '\x1b[0m',
-  RedBold = '\x1b[1;31m',
-  GreenBold = '\x1b[1;32m',
-  YellowBold = '\x1b[1;33m',
   BlueBold = '\x1b[1;34m',
   Gray = '\x1b[90m',
+  GreenBold = '\x1b[1;32m',
+  Magenta = '\x1b[35m',
+  RedBold = '\x1b[1;31m',
+  Unset = '\x1b[0m',
+  YellowBold = '\x1b[1;33m',
 }
 
 type ClientLabelStyles = {
@@ -23,13 +25,13 @@ type ClientLabelStyles = {
   borderColor: string;
 };
 
-type ServerLabelStyles = {
+type TerminalLabelStyles = {
   textColor: TerminalTextColor;
 };
 
 type LabelStyles = {
   client: ClientLabelStyles;
-  server: ServerLabelStyles;
+  terminal: TerminalLabelStyles;
 };
 
 type LogKindDetails = {
@@ -41,6 +43,10 @@ type TitleMessagesData = {
   kind?: LogKindDetails;
   labels?: LogLabel[];
 };
+
+interface IConsoleDebugOptions extends IDebugOptions {
+  text: string;
+}
 
 interface IConsoleLogOptions extends ILogOptions {
   text: string;
@@ -62,7 +68,7 @@ interface IConsoleSuccessOptions extends ISuccessOptions {
   text: string;
 }
 
-type ConsoleLogProviderConfig = IDebugOptions;
+type ConsoleLogProviderConfig = IDebuggingOptions;
 
 const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
@@ -77,7 +83,38 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
     this._isDebugEnabled = config?.debug ?? false;
   }
 
-  async log(options: IConsoleLogOptions) {
+  debug(options: IConsoleDebugOptions) {
+    const { labels, text, context } = options;
+
+    const titleMessages = this._buildTitleMessages({
+      kind: {
+        value: 'debug',
+        styles: {
+          client: {
+            backgroundColor: 'rgba(200, 160, 217, 0.5)',
+            borderColor: 'rgb(182, 149, 191)',
+          },
+          terminal: {
+            textColor: TerminalTextColor.Magenta,
+          },
+        },
+      },
+      labels,
+    });
+
+    const contextMessages = context ? this._buildContextMessages(context) : [];
+
+    const messages = this._messages(
+      ...titleMessages,
+      text,
+      __PARAGRAPH_SYMBOL__,
+      ...contextMessages,
+    );
+
+    console.debug(...messages);
+  }
+
+  log(options: IConsoleLogOptions) {
     const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({ labels });
@@ -93,7 +130,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
     console.log(...messages);
   }
 
-  async info(options: IConsoleInfoOptions) {
+  info(options: IConsoleInfoOptions) {
     const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({
@@ -104,7 +141,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
             backgroundColor: 'rgba(68, 123, 242, 0.4)',
             borderColor: 'rgba(68, 120, 242, 0.7)',
           },
-          server: {
+          terminal: {
             textColor: TerminalTextColor.BlueBold,
           },
         },
@@ -124,7 +161,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
     console.info(...messages);
   }
 
-  async warn(options: IConsoleWarnOptions) {
+  warn(options: IConsoleWarnOptions) {
     const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({
@@ -135,7 +172,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
             backgroundColor: 'rgba(222, 184, 16, 0.5)',
             borderColor: 'rgb(222, 184, 16)',
           },
-          server: {
+          terminal: {
             textColor: TerminalTextColor.YellowBold,
           },
         },
@@ -155,7 +192,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
     console.warn(...messages);
   }
 
-  async error(options: IConsoleErrorOptions) {
+  error(options: IConsoleErrorOptions) {
     const { labels, text, error, context } = options;
 
     const titleMessages = this._buildTitleMessages({
@@ -166,7 +203,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
             backgroundColor: 'rgba(242, 68, 68, 0.4)',
             borderColor: 'rgba(242, 68, 68, 0.7)',
           },
-          server: {
+          terminal: {
             textColor: TerminalTextColor.RedBold,
           },
         },
@@ -189,7 +226,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
     console.error(...messages);
   }
 
-  async success(options: IConsoleSuccessOptions) {
+  success(options: IConsoleSuccessOptions) {
     const { labels, text, context } = options;
 
     const titleMessages = this._buildTitleMessages({
@@ -200,7 +237,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
             backgroundColor: 'rgba(68, 242, 71, 0.4)',
             borderColor: 'rgba(68, 242, 94, 0.7)',
           },
-          server: {
+          terminal: {
             textColor: TerminalTextColor.GreenBold,
           },
         },
@@ -243,7 +280,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
     if (kind !== undefined) {
       const kindMessage = this._buildColoredTerminalMessage(
         kind.value,
-        kind.styles.server.textColor,
+        kind.styles.terminal.textColor,
       );
 
       return labelsMessage

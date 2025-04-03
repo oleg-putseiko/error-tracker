@@ -1,5 +1,5 @@
 import {
-  IDebugOptions,
+  IDebuggingOptions,
   IInfoOptions,
   ILogOptions,
   ISuccessOptions,
@@ -52,7 +52,7 @@ interface ITelegramSuccessOptions extends ISuccessOptions, IRequestOptions {
   description?: string;
 }
 
-type TelegramLogProviderConfig = IDebugOptions & {
+type TelegramLogProviderConfig = IDebuggingOptions & {
   botToken?: string;
   chatId?: string;
 };

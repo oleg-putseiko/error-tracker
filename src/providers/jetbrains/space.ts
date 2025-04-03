@@ -1,5 +1,5 @@
 import {
-  IDebugOptions,
+  IDebuggingOptions,
   IInfoOptions,
   ILogOptions,
   ISuccessOptions,
@@ -54,7 +54,7 @@ interface IJetbrainsSpaceSuccessOptions
   description?: string;
 }
 
-type JetbrainsSpaceLogProviderConfig = IDebugOptions & {
+type JetbrainsSpaceLogProviderConfig = IDebuggingOptions & {
   baseUrl?: string;
   apiKey?: string;
   channelName?: string;

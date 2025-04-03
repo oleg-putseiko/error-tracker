@@ -1,33 +1,47 @@
 import {
   IErrorOptions,
-  IDebugOptions,
+  IDebuggingOptions,
   ILogProvider,
   IInfoOptions,
   IWarnOptions,
   ILogOptions,
   ISuccessOptions,
   LogLabel,
+  IDebugOptions,
 } from './providers/base';
 
 type ExistentialArray<T extends unknown[]> = [...T];
 
 type Providers<TIds extends string[]> = ExistentialArray<{
-  [Index in keyof TIds]: ILogProvider<TIds[Index]>;
+  [_Index in keyof TIds]: ILogProvider<TIds[_Index]>;
 }>;
 
 type ProviderOptions<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds>,
-  TLogKey extends 'log' | 'info' | 'warn' | 'error' | 'success',
+  TLogKey extends 'debug' | 'log' | 'info' | 'warn' | 'error' | 'success',
 > = {
-  [Index in keyof TProviders]: {
-    [Key in TProviders[Index] extends ILogProvider<string>
-      ? TProviders[Index]['id']
-      : never]: TProviders[Index] extends ILogProvider<string>
-      ? Partial<Parameters<TProviders[Index][TLogKey]>[0]>
+  [_Index in keyof TProviders]: {
+    [_Key in TProviders[_Index] extends ILogProvider<string>
+      ? TProviders[_Index]['id']
+      : never]: TProviders[_Index] extends ILogProvider<string>
+      ? TProviders[_Index][TLogKey] extends infer _Method
+        ? _Method extends undefined
+          ? never
+          : _Method extends (options: infer _Options) => any
+            ? Partial<_Options>
+            : never
+        : never
       : never;
   };
 }[keyof TProviders];
+
+type DebugOptions<
+  TProviderIds extends string[],
+  TProviders extends Providers<TProviderIds>,
+> = IDebugOptions & {
+  providers?: ProviderOptions<TProviderIds, TProviders, 'debug'>;
+};
 
 type LogOptions<
   TProviderIds extends string[],
@@ -67,7 +81,7 @@ type SuccessOptions<
 type ErrorTrackerConfig<
   TProviderIds extends string[],
   TProviders extends Providers<TProviderIds> = Providers<TProviderIds>,
-> = IDebugOptions & {
+> = IDebuggingOptions & {
   providers: TProviders;
 };
 
@@ -83,6 +97,24 @@ export class Logger<
     this._isDebugEnabled = config.debug ?? false;
   }
 
+  async debug(options: DebugOptions<TProviderIds, TProviders>) {
+    const { context, providers } = options;
+
+    await Promise.allSettled(
+      this._providers.map((provider) => {
+        const providerOptions =
+          providers?.[provider.id as keyof typeof providers];
+
+        return provider.debug?.({
+          context,
+          debug: this._isDebugEnabled,
+          labels: this._getDefaultLabels(),
+          ...(providerOptions ?? {}),
+        });
+      }),
+    );
+  }
+
   async log(options: LogOptions<TProviderIds, TProviders>) {
     const { context, providers } = options;
 
@@ -95,7 +127,7 @@ export class Logger<
           context,
           debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
-          ...providerOptions,
+          ...(providerOptions ?? {}),
         });
       }),
     );
@@ -113,7 +145,7 @@ export class Logger<
           context,
           debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
-          ...providerOptions,
+          ...(providerOptions ?? {}),
         });
       }),
     );
@@ -131,7 +163,7 @@ export class Logger<
           context,
           debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
-          ...providerOptions,
+          ...(providerOptions ?? {}),
         });
       }),
     );
@@ -150,7 +182,7 @@ export class Logger<
           context,
           debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
-          ...providerOptions,
+          ...(providerOptions ?? {}),
         });
       }),
     );
@@ -168,7 +200,7 @@ export class Logger<
           context,
           debug: this._isDebugEnabled,
           labels: this._getDefaultLabels(),
-          ...providerOptions,
+          ...(providerOptions ?? {}),
         });
       }),
     );

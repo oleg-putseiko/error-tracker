@@ -1,6 +1,6 @@
 export type LogLabel = { name: string; value: string };
 
-export interface IDebugOptions {
+export interface IDebuggingOptions {
   debug?: boolean;
 }
 
@@ -9,21 +9,26 @@ export interface IContextualOptions {
   context?: Record<string, unknown>;
 }
 
-export interface ILogOptions extends IDebugOptions, IContextualOptions {}
+export interface IDebugOptions extends IDebuggingOptions, IContextualOptions {}
 
-export interface IInfoOptions extends IDebugOptions, IContextualOptions {}
+export interface ILogOptions extends IDebuggingOptions, IContextualOptions {}
 
-export interface IWarnOptions extends IDebugOptions, IContextualOptions {}
+export interface IInfoOptions extends IDebuggingOptions, IContextualOptions {}
 
-export interface IErrorOptions extends IDebugOptions, IContextualOptions {
+export interface IWarnOptions extends IDebuggingOptions, IContextualOptions {}
+
+export interface IErrorOptions extends IDebuggingOptions, IContextualOptions {
   error: unknown;
 }
 
-export interface ISuccessOptions extends IDebugOptions, IContextualOptions {}
+export interface ISuccessOptions
+  extends IDebuggingOptions,
+    IContextualOptions {}
 
 export interface ILogProvider<TId extends string> {
   readonly id: TId;
 
+  debug?(options: IDebugOptions): void | Promise<void>;
   log(options: ILogOptions): void | Promise<void>;
   info(options: IInfoOptions): void | Promise<void>;
   warn(options: IWarnOptions): void | Promise<void>;
