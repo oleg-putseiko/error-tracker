@@ -19,9 +19,7 @@ export interface IErrorOptions extends IContextualOptions {
 
 export interface ISuccessOptions extends IContextualOptions {}
 
-export interface ILogProvider<TId extends string> {
-  readonly id: TId;
-
+export interface ILogProvider {
   debug?(options: IDebugOptions): void | Promise<void>;
   log(options: ILogOptions): void | Promise<void>;
   info(options: IInfoOptions): void | Promise<void>;

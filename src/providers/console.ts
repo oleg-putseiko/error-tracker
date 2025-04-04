@@ -71,9 +71,7 @@ const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
 const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
-export class ConsoleLogProvider implements ILogProvider<'console'> {
-  readonly id = 'console';
-
+export class ConsoleLogProvider implements ILogProvider {
   debug(options: IConsoleDebugOptions) {
     const { labels, text, context } = options;
 
@@ -335,6 +333,7 @@ export class ConsoleLogProvider implements ILogProvider<'console'> {
       }
 
       if (message === __PARAGRAPH_SYMBOL__) {
+        // TODO: find prev non special symbol
         const prevMessage = formattedMessages[formattedMessages.length - 1];
         const nextMessage = validMessages[index + 1];
 

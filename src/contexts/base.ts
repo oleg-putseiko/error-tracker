@@ -1,3 +1,5 @@
+export interface ILogContextProps {}
+
 export interface ILogContext {
-  getProps(): object;
+  getProps(): ILogContextProps | null;
 }

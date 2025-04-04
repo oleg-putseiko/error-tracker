@@ -59,11 +59,7 @@ type JetbrainsSpaceLogProviderConfig = {
   channelName?: string;
 };
 
-export class JetbrainsSpaceLogProvider
-  implements ILogProvider<'jetbrains_space'>
-{
-  readonly id = 'jetbrains_space';
-
+export class JetbrainsSpaceLogProvider implements ILogProvider {
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
   private readonly _channelName?: string;

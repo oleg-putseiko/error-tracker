@@ -11,109 +11,69 @@ import {
 
 // TODO: change the console log kind colors in the browser
 
-type ExistentialArray<T extends unknown[]> = [...T];
-
-type Providers<TIds extends string[]> = ExistentialArray<{
-  [_Index in keyof TIds]: ILogProvider<TIds[_Index]>;
-}>;
+type Providers = Record<string, ILogProvider>;
 
 type CommonProviderOptions = {
   enabled?: boolean;
 };
 
 type ProviderOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-  TLogKey extends 'debug' | 'log' | 'info' | 'warn' | 'error' | 'success',
-> = CommonProviderOptions &
-  {
-    [_Index in keyof TProviders]: {
-      [_Id in TProviders[_Index] extends ILogProvider<string>
-        ? TProviders[_Index]['id']
-        : never]: TProviders[_Index] extends ILogProvider<string>
-        ? TProviders[_Index][TLogKey] extends infer _Method
-          ? _Method extends undefined
-            ? never
-            : _Method extends (options: infer _Options) => any
-              ? Partial<_Options>
-              : never
-          : never
-        : never;
-    };
-  }[number];
-
-type DebugOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> = IDebugOptions & {
-  providers?: ProviderOptions<TProviderIds, TProviders, 'debug'>;
-};
-
-type LogOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> = ILogOptions & {
-  providers?: ProviderOptions<TProviderIds, TProviders, 'log'>;
-};
-
-type InfoOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> = IInfoOptions & {
-  providers?: ProviderOptions<TProviderIds, TProviders, 'info'>;
-};
-
-type WarnOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> = IWarnOptions & {
-  providers?: ProviderOptions<TProviderIds, TProviders, 'warn'>;
-};
-
-type ErrorOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> = IErrorOptions & {
-  providers?: ProviderOptions<TProviderIds, TProviders, 'error'>;
-};
-
-type SuccessOptions<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> = ISuccessOptions & {
-  providers?: ProviderOptions<TProviderIds, TProviders, 'success'>;
-};
-
-type ErrorTrackerConfig<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds> = Providers<TProviderIds>,
+  TProviders extends Providers,
+  TLogKey extends keyof ILogProvider,
 > = {
+  [_Id in keyof TProviders]: TProviders[_Id][TLogKey] extends (
+    options: infer _MethodOptions,
+  ) => any
+    ? CommonProviderOptions & _MethodOptions
+    : never;
+};
+
+type DebugOptions<TProviders extends Providers> = IDebugOptions & {
+  providers?: ProviderOptions<TProviders, 'debug'>;
+};
+
+type LogOptions<TProviders extends Providers> = ILogOptions & {
+  providers?: ProviderOptions<TProviders, 'log'>;
+};
+
+type InfoOptions<TProviders extends Providers> = IInfoOptions & {
+  providers?: ProviderOptions<TProviders, 'info'>;
+};
+
+type WarnOptions<TProviders extends Providers> = IWarnOptions & {
+  providers?: ProviderOptions<TProviders, 'warn'>;
+};
+
+type ErrorOptions<TProviders extends Providers> = IErrorOptions & {
+  providers?: ProviderOptions<TProviders, 'error'>;
+};
+
+type SuccessOptions<TProviders extends Providers> = ISuccessOptions & {
+  providers?: ProviderOptions<TProviders, 'success'>;
+};
+
+type ErrorTrackerConfig<TProviders extends Providers> = {
   providers: TProviders;
   enabled?: boolean;
 };
 
 const IS_WINDOW_DEFINED = typeof window !== 'undefined';
 
-export class Logger<
-  TProviderIds extends string[],
-  TProviders extends Providers<TProviderIds>,
-> {
+export class Logger<TProviders extends Providers> {
   private readonly _providers: TProviders;
   private readonly _isEnabled: boolean;
 
-  constructor(config: ErrorTrackerConfig<TProviderIds, TProviders>) {
+  constructor(config: ErrorTrackerConfig<TProviders>) {
     this._providers = config.providers;
     this._isEnabled = config.enabled ?? true;
   }
 
-  async debug(options: DebugOptions<TProviderIds, TProviders>) {
+  async debug(options: DebugOptions<TProviders>) {
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) => {
-        const providerOptions:
-          | (CommonProviderOptions & IDebugOptions)
-          | undefined = providers?.[provider.id as keyof typeof providers];
+      Object.entries(this._providers).map(([id, provider]) => {
+        const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.debug?.({
@@ -126,14 +86,12 @@ export class Logger<
     );
   }
 
-  async log(options: LogOptions<TProviderIds, TProviders>) {
+  async log(options: LogOptions<TProviders>) {
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) => {
-        const providerOptions:
-          | (CommonProviderOptions & ILogOptions)
-          | undefined = providers?.[provider.id as keyof typeof providers];
+      Object.entries(this._providers).map(([id, provider]) => {
+        const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.log({
@@ -146,14 +104,12 @@ export class Logger<
     );
   }
 
-  async info(options: InfoOptions<TProviderIds, TProviders>) {
+  async info(options: InfoOptions<TProviders>) {
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) => {
-        const providerOptions:
-          | (CommonProviderOptions & IInfoOptions)
-          | undefined = providers?.[provider.id as keyof typeof providers];
+      Object.entries(this._providers).map(([id, provider]) => {
+        const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.info({
@@ -166,14 +122,12 @@ export class Logger<
     );
   }
 
-  async warn(options: WarnOptions<TProviderIds, TProviders>) {
+  async warn(options: WarnOptions<TProviders>) {
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) => {
-        const providerOptions:
-          | (CommonProviderOptions & IWarnOptions)
-          | undefined = providers?.[provider.id as keyof typeof providers];
+      Object.entries(this._providers).map(([id, provider]) => {
+        const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.warn({
@@ -186,14 +140,12 @@ export class Logger<
     );
   }
 
-  async error(options: ErrorOptions<TProviderIds, TProviders>) {
+  async error(options: ErrorOptions<TProviders>) {
     const { error, context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) => {
-        const providerOptions = providers?.[
-          provider.id as keyof typeof providers
-        ] as (CommonProviderOptions & IErrorOptions) | undefined;
+      Object.entries(this._providers).map(([id, provider]) => {
+        const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.error({
@@ -207,14 +159,12 @@ export class Logger<
     );
   }
 
-  async success(options: SuccessOptions<TProviderIds, TProviders>) {
+  async success(options: SuccessOptions<TProviders>) {
     const { context, providers } = options;
 
     await Promise.allSettled(
-      this._providers.map((provider) => {
-        const providerOptions:
-          | (CommonProviderOptions & ISuccessOptions)
-          | undefined = providers?.[provider.id as keyof typeof providers];
+      Object.entries(this._providers).map(([id, provider]) => {
+        const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.success({

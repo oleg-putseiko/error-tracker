@@ -56,9 +56,7 @@ type TelegramLogProviderConfig = {
   chatId?: string;
 };
 
-export class TelegramLogProvider implements ILogProvider<'telegram'> {
-  readonly id = 'telegram';
-
+export class TelegramLogProvider implements ILogProvider {
   private readonly _botToken?: string;
   private readonly _chatId?: string;
 
