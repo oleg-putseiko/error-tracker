@@ -321,11 +321,11 @@ export class ConsoleLogProvider implements ILogProvider {
   }
 
   private _messages(...messages: unknown[]): unknown[] {
-    const validMessages: unknown[] = messages.filter(this._isValidMessage);
+    const filteredMessages: unknown[] = this._filterMessages(messages);
     const formattedMessages: unknown[] = [];
 
-    for (let index = 0; index < validMessages.length; index++) {
-      const message = validMessages[index];
+    for (let index = 0; index < filteredMessages.length; index++) {
+      const message = filteredMessages[index];
 
       if (!this._isSpecialSymbol(message)) {
         formattedMessages.push(message);
@@ -333,9 +333,8 @@ export class ConsoleLogProvider implements ILogProvider {
       }
 
       if (message === __PARAGRAPH_SYMBOL__) {
-        // TODO: find prev non special symbol
         const prevMessage = formattedMessages[formattedMessages.length - 1];
-        const nextMessage = validMessages[index + 1];
+        const nextMessage = filteredMessages[index + 1];
 
         if (nextMessage !== undefined) {
           formattedMessages.push(
@@ -348,6 +347,21 @@ export class ConsoleLogProvider implements ILogProvider {
     }
 
     return formattedMessages;
+  }
+
+  private _filterMessages(messages: unknown[]): unknown[] {
+    const stack: unknown[] = [];
+
+    for (const message of messages) {
+      if (
+        this._isValidMessage(message) &&
+        (!this._isSpecialSymbol(message) || stack[stack.length - 1] !== message)
+      ) {
+        stack.push(message);
+      }
+    }
+
+    return stack;
   }
 
   private _stringify(value: unknown): string {
