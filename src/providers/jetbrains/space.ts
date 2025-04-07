@@ -7,6 +7,7 @@ import {
   type IErrorOptions,
   type ILogProvider,
 } from '../base';
+import { Json } from 'detailed-json';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
@@ -201,7 +202,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
 
     return await fetch(`${baseUrl}/api/http${path}`, {
       ...options,
-      body: options?.body ? JSON.stringify(options.body) : undefined,
+      body: options?.body ? Json.stringify(options.body) : undefined,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         Accept: 'application/json',
@@ -229,7 +230,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     return [
       this._buildLabelRow(label),
       '```json',
-      this._stringify(value),
+      Json.stringify(value),
       '```',
     ].join('\n');
   }
@@ -241,9 +242,5 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
 
   private _rows(...rows: unknown[]): string {
     return rows.filter(Boolean).join('\n');
-  }
-
-  private _stringify(value: unknown): string {
-    return JSON.stringify(value, Object.getOwnPropertyNames(value), 4);
   }
 }

@@ -1,3 +1,4 @@
+import { Json } from 'detailed-json';
 import {
   IInfoOptions,
   ILogOptions,
@@ -212,7 +213,7 @@ export class TelegramLogProvider implements ILogProvider {
     return [
       this._buildLabelRow(label),
       '```json',
-      this._stringify(value),
+      Json.stringify(value),
       '```',
     ].join('\n');
   }
@@ -232,9 +233,5 @@ export class TelegramLogProvider implements ILogProvider {
         .map(([key, value]) => `${key}=${value}`)
         .join('&'),
     );
-  }
-
-  private _stringify(value: unknown): string {
-    return JSON.stringify(value, Object.getOwnPropertyNames(value), 4);
   }
 }

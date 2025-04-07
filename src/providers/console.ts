@@ -1,3 +1,4 @@
+import { Json } from 'detailed-json';
 import {
   IDebugOptions,
   IInfoOptions,
@@ -306,11 +307,11 @@ export class ConsoleLogProvider implements ILogProvider {
   }
 
   private _buildErrorMessages(error: unknown): string[] {
-    return ['Error:', this._stringify(error)];
+    return ['Error:', Json.stringify(error)];
   }
 
   private _buildContextMessages(context: Record<string, unknown>): string[] {
-    return ['Context:', this._stringify(context)];
+    return ['Context:', Json.stringify(context)];
   }
 
   private _buildColoredTerminalMessage(
@@ -362,10 +363,6 @@ export class ConsoleLogProvider implements ILogProvider {
     }
 
     return stack;
-  }
-
-  private _stringify(value: unknown): string {
-    return JSON.stringify(value, Object.getOwnPropertyNames(value), 4);
   }
 
   private _isValidMessage(message: unknown) {

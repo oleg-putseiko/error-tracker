@@ -24,6 +24,9 @@
     "typecheck": "tsc --noEmit --incremental false",
     "prepare": "husky install | chmod +x ./.husky/*"
   },
+  "dependencies": {
+    "detailed-json": "^1.0.1"
+  },
   "devDependencies": {
     "@commitlint/cli": "^18.2.0",
     "@commitlint/config-conventional": "^18.1.0",

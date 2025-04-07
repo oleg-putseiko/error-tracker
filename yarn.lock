@@ -1518,6 +1518,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"detailed-json@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "detailed-json@npm:1.0.1"
+  checksum: 8cdcf37bb7d44f17667c745654640f9af383d49bb96d3c819fcb2931cce0970dddef3e87ac52942ed355790a4b8812ef2a859511536d7f795314c0a6ae4e1201
+  languageName: node
+  linkType: hard
+
 "dot-prop@npm:^5.1.0":
   version: 5.3.0
   resolution: "dot-prop@npm:5.3.0"
@@ -1568,6 +1575,7 @@ __metadata:
     "@types/node": ^22.10.1
     "@typescript-eslint/eslint-plugin": ^8.28.0
     "@typescript-eslint/parser": ^8.28.0
+    detailed-json: ^1.0.1
     eslint: ^9.16.0
     eslint-config-prettier: ^10.1.1
     husky: ^8.0.3
