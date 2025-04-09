@@ -1,14 +1,14 @@
 import { IBaseOptions } from '../providers/base';
 
 type SwitchParams<TOptions extends IBaseOptions> = {
-  options: TOptions;
+  options: TOptions | unknown[];
   styled: (
     template: Exclude<TOptions['template'], undefined>,
     options: Omit<TOptions, 'messages' | 'template'>,
   ) => void | Promise<void>;
   unstyled: (
-    messages: Exclude<TOptions['messages'], undefined>,
-    options: Omit<TOptions, 'messages' | 'template'>,
+    messages: unknown[],
+    options?: Omit<TOptions, 'messages' | 'template'>,
   ) => void | Promise<void>;
 };
 
@@ -17,6 +17,12 @@ export class LogMethodOptions {
     params: SwitchParams<TOptions>,
   ) {
     const { options, styled, unstyled } = params;
+
+    if (Array.isArray(options)) {
+      await unstyled(options);
+      return;
+    }
+
     const { messages, template, ...delegatedOptions } = options;
 
     if (messages !== undefined) {

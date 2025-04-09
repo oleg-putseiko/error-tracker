@@ -22,7 +22,10 @@ type ProviderOptions<
   TLogKey extends keyof ILogProvider,
 > = {
   [_Id in keyof TProviders]: CommonProviderOptions &
-    Parameters<Exclude<TProviders[_Id][TLogKey], undefined>>[0];
+    Exclude<
+      Parameters<Exclude<TProviders[_Id][TLogKey], undefined>>[0],
+      unknown[]
+    >;
 };
 
 type DebugOptions<TProviders extends Providers> = IDebugOptions & {
@@ -56,6 +59,14 @@ type ErrorTrackerConfig<TProviders extends Providers> = {
 
 const IS_WINDOW_DEFINED = typeof window !== 'undefined';
 
+class DisabledProviderError extends Error {
+  constructor(providerId: string) {
+    super(`Log provider with id "${providerId}" is disabled.`);
+
+    this.name = 'DisabledProviderError';
+  }
+}
+
 export class Logger<TProviders extends Providers> {
   private readonly _providers: TProviders;
   private readonly _isEnabled: boolean;
@@ -65,11 +76,16 @@ export class Logger<TProviders extends Providers> {
     this._isEnabled = config.enabled ?? true;
   }
 
-  async debug(options: DebugOptions<TProviders>) {
-    const { providers, ...delegatedOptions } = options;
-
+  async debug(options: DebugOptions<TProviders> | unknown[]) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
+        if (Array.isArray(options)) {
+          if (this._isEnabled) return provider.debug?.(options);
+          throw new DisabledProviderError(id);
+        }
+
+        const { providers, ...delegatedOptions } = options;
+
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
@@ -83,15 +99,22 @@ export class Logger<TProviders extends Providers> {
             },
           });
         }
+
+        throw new DisabledProviderError(id);
       }),
     );
   }
 
-  async log(options: LogOptions<TProviders>) {
-    const { providers, ...delegatedOptions } = options;
-
+  async log(options: LogOptions<TProviders> | unknown[]) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
+        if (Array.isArray(options)) {
+          if (this._isEnabled) return provider.log(options);
+          throw new DisabledProviderError(id);
+        }
+
+        const { providers, ...delegatedOptions } = options;
+
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
@@ -105,15 +128,22 @@ export class Logger<TProviders extends Providers> {
             },
           });
         }
+
+        throw new DisabledProviderError(id);
       }),
     );
   }
 
-  async info(options: InfoOptions<TProviders>) {
-    const { providers, ...delegatedOptions } = options;
-
+  async info(options: InfoOptions<TProviders> | unknown[]) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
+        if (Array.isArray(options)) {
+          if (this._isEnabled) return provider.info(options);
+          throw new DisabledProviderError(id);
+        }
+
+        const { providers, ...delegatedOptions } = options;
+
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
@@ -127,15 +157,22 @@ export class Logger<TProviders extends Providers> {
             },
           });
         }
+
+        throw new DisabledProviderError(id);
       }),
     );
   }
 
-  async warn(options: WarnOptions<TProviders>) {
-    const { providers, ...delegatedOptions } = options;
-
+  async warn(options: WarnOptions<TProviders> | unknown[]) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
+        if (Array.isArray(options)) {
+          if (this._isEnabled) return provider.warn(options);
+          throw new DisabledProviderError(id);
+        }
+
+        const { providers, ...delegatedOptions } = options;
+
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
@@ -149,15 +186,22 @@ export class Logger<TProviders extends Providers> {
             },
           });
         }
+
+        throw new DisabledProviderError(id);
       }),
     );
   }
 
-  async error(options: ErrorOptions<TProviders>) {
-    const { providers, ...delegatedOptions } = options;
-
+  async error(options: ErrorOptions<TProviders> | unknown[]) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
+        if (Array.isArray(options)) {
+          if (this._isEnabled) return provider.warn(options);
+          throw new DisabledProviderError(id);
+        }
+
+        const { providers, ...delegatedOptions } = options;
+
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
@@ -174,15 +218,22 @@ export class Logger<TProviders extends Providers> {
             },
           });
         }
+
+        throw new DisabledProviderError(id);
       }),
     );
   }
 
-  async success(options: SuccessOptions<TProviders>) {
-    const { providers, ...delegatedOptions } = options;
-
+  async success(options: SuccessOptions<TProviders> | unknown[]) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
+        if (Array.isArray(options)) {
+          if (this._isEnabled) return provider.warn(options);
+          throw new DisabledProviderError(id);
+        }
+
+        const { providers, ...delegatedOptions } = options;
+
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
@@ -196,6 +247,8 @@ export class Logger<TProviders extends Providers> {
             },
           });
         }
+
+        throw new DisabledProviderError(id);
       }),
     );
   }

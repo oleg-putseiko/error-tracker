@@ -66,7 +66,7 @@ const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
 export class ConsoleLogProvider implements ILogProvider {
-  debug(options: IConsoleDebugOptions) {
+  debug(options: IConsoleDebugOptions | unknown[]) {
     LogMethodOptions.switch<IConsoleDebugOptions>({
       options,
       unstyled: (messages) => {
@@ -107,7 +107,7 @@ export class ConsoleLogProvider implements ILogProvider {
     });
   }
 
-  log(options: IConsoleLogOptions) {
+  log(options: IConsoleLogOptions | unknown[]) {
     LogMethodOptions.switch<IConsoleLogOptions>({
       options,
       unstyled: (messages) => {
@@ -133,7 +133,7 @@ export class ConsoleLogProvider implements ILogProvider {
     });
   }
 
-  info(options: IConsoleInfoOptions) {
+  info(options: IConsoleInfoOptions | unknown[]) {
     LogMethodOptions.switch<IConsoleInfoOptions>({
       options,
       unstyled: (messages) => {
@@ -174,7 +174,7 @@ export class ConsoleLogProvider implements ILogProvider {
     });
   }
 
-  warn(options: IConsoleWarnOptions) {
+  warn(options: IConsoleWarnOptions | unknown[]) {
     LogMethodOptions.switch<IConsoleWarnOptions>({
       options,
       unstyled: (messages) => {
@@ -215,7 +215,7 @@ export class ConsoleLogProvider implements ILogProvider {
     });
   }
 
-  error(options: IConsoleErrorOptions) {
+  error(options: IConsoleErrorOptions | unknown[]) {
     LogMethodOptions.switch<IConsoleErrorOptions>({
       options,
       unstyled: (messages) => {
@@ -259,7 +259,7 @@ export class ConsoleLogProvider implements ILogProvider {
     });
   }
 
-  success(options: IConsoleSuccessOptions) {
+  success(options: IConsoleSuccessOptions | unknown[]) {
     LogMethodOptions.switch<IConsoleSuccessOptions>({
       options,
       unstyled: (messages) => {

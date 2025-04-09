@@ -77,7 +77,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     this._channelName = config.channelName;
   }
 
-  async log(options: IJetbrainsSpaceLogOptions) {
+  async log(options: IJetbrainsSpaceLogOptions | unknown[]) {
     await LogMethodOptions.switch<IJetbrainsSpaceLogOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -102,7 +102,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async info(options: IJetbrainsSpaceInfoOptions) {
+  async info(options: IJetbrainsSpaceInfoOptions | unknown[]) {
     await LogMethodOptions.switch<IJetbrainsSpaceInfoOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -133,7 +133,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async warn(options: IJetbrainsSpaceWarnOptions) {
+  async warn(options: IJetbrainsSpaceWarnOptions | unknown[]) {
     await LogMethodOptions.switch<IJetbrainsSpaceWarnOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -159,7 +159,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async error(options: IJetbrainsSpaceErrorOptions) {
+  async error(options: IJetbrainsSpaceErrorOptions | unknown[]) {
     await LogMethodOptions.switch<IJetbrainsSpaceErrorOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -192,7 +192,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async success(options: IJetbrainsSpaceSuccessOptions) {
+  async success(options: IJetbrainsSpaceSuccessOptions | unknown[]) {
     await LogMethodOptions.switch<IJetbrainsSpaceSuccessOptions>({
       options,
       unstyled: async (messages, options) => {

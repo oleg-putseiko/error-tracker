@@ -38,7 +38,7 @@ export interface ISuccessOptions<TTemplate extends AnyObject = AnyObject>
   extends IBaseOptions<TTemplate> {}
 
 export interface ILogFunction<TOptions extends IBaseOptions> {
-  (options: TOptions): void | Promise<void>;
+  (options: TOptions | unknown[]): void | Promise<void>;
 }
 export interface ILogProvider {
   debug?: ILogFunction<IDebugOptions>;

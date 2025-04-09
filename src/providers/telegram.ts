@@ -74,7 +74,7 @@ export class TelegramLogProvider implements ILogProvider {
     this._chatId = config.chatId;
   }
 
-  async log(options: ITelegramLogOptions) {
+  async log(options: ITelegramLogOptions | unknown[]) {
     await LogMethodOptions.switch<ITelegramLogOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -99,7 +99,7 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async info(options: ITelegramInfoOptions) {
+  async info(options: ITelegramInfoOptions | unknown[]) {
     await LogMethodOptions.switch<ITelegramInfoOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -130,7 +130,7 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async warn(options: ITelegramWarnOptions) {
+  async warn(options: ITelegramWarnOptions | unknown[]) {
     await LogMethodOptions.switch<ITelegramWarnOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -156,7 +156,7 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async error(options: ITelegramErrorOptions) {
+  async error(options: ITelegramErrorOptions | unknown[]) {
     await LogMethodOptions.switch<ITelegramErrorOptions>({
       options,
       unstyled: async (messages, options) => {
@@ -189,7 +189,7 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async success(options: ITelegramSuccessOptions) {
+  async success(options: ITelegramSuccessOptions | unknown[]) {
     await LogMethodOptions.switch<ITelegramSuccessOptions>({
       options,
       unstyled: async (messages, options) => {
