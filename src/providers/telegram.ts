@@ -8,6 +8,7 @@ import {
   type IErrorOptions,
   type ILogProvider,
 } from './base';
+import { LogMethodOptions } from '../utils/log-method-options';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
@@ -22,35 +23,42 @@ type SendMessageOptions = {
   text: string;
 };
 
-interface IRequestOptions {
+type SendUnstyledMessageOptions = {
   botToken?: string;
   chatId?: string;
-}
+  symbol?: string;
+  messages: unknown[];
+};
 
-interface ITelegramLogOptions extends ILogOptions, IRequestOptions {
+type TemplateOptions = {
   title?: string;
   description?: string;
-}
+};
 
-interface ITelegramInfoOptions extends IInfoOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+type RequestOptions = {
+  botToken?: string;
+  chatId?: string;
+};
 
-interface ITelegramWarnOptions extends IWarnOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface ITelegramLogOptions
+  extends RequestOptions,
+    ILogOptions<TemplateOptions> {}
 
-interface ITelegramErrorOptions extends IErrorOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface ITelegramInfoOptions
+  extends RequestOptions,
+    IInfoOptions<TemplateOptions> {}
 
-interface ITelegramSuccessOptions extends ISuccessOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface ITelegramWarnOptions
+  extends RequestOptions,
+    IWarnOptions<TemplateOptions> {}
+
+interface ITelegramErrorOptions
+  extends RequestOptions,
+    IErrorOptions<TemplateOptions> {}
+
+interface ITelegramSuccessOptions
+  extends RequestOptions,
+    ISuccessOptions<TemplateOptions> {}
 
 type TelegramLogProviderConfig = {
   botToken?: string;
@@ -67,98 +75,156 @@ export class TelegramLogProvider implements ILogProvider {
   }
 
   async log(options: ITelegramLogOptions) {
-    const { title, description, context, labels, ...message } = options;
+    await LogMethodOptions.switch<ITelegramLogOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const { title, description, context, labels } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        title && `${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            title && `${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async info(options: ITelegramInfoOptions) {
-    const {
-      title = 'Information',
-      description,
-      labels,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<ITelegramInfoOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: 'ℹ️',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const {
+          title = 'Information',
+          description,
+          labels,
+          context,
+        } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `ℹ️ ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `ℹ️ ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async warn(options: ITelegramWarnOptions) {
-    const {
-      title = 'Warning',
-      description,
-      labels,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<ITelegramWarnOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: '⚠️',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const { title = 'Warning', description, labels, context } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `⚠️ ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `⚠️ ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async error(options: ITelegramErrorOptions) {
-    const {
-      title = 'An error occurred',
-      description,
-      labels,
-      error,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<ITelegramErrorOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: '📛',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const {
+          title = 'An error occurred',
+          description,
+          labels,
+          error,
+          context,
+        } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `📛 ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        this._buildErrorRow(error),
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `📛 ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            this._buildErrorRow(error),
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async success(options: ITelegramSuccessOptions) {
-    const {
-      title = 'Success',
-      description,
-      labels,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<ITelegramSuccessOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: '✅',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const { title = 'Success', description, labels, context } = template;
+
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `✅ ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
+    });
+  }
+
+  private async _sendUnstyledMessage(options: SendUnstyledMessageOptions) {
+    const { symbol, messages, ...delegatedOptions } = options;
+
+    const stringifiedMessages = messages
+      .map((item) => Json.stringify(item))
+      .join(' ');
 
     await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `✅ ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+      ...delegatedOptions,
+      text: symbol ? `${symbol} ${stringifiedMessages}` : stringifiedMessages,
     });
   }
 

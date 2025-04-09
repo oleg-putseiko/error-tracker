@@ -1,3 +1,4 @@
+import { LogMethodOptions } from '../../utils/log-method-options';
 import {
   IInfoOptions,
   ILogOptions,
@@ -22,37 +23,41 @@ type SendMessageOptions = {
   text: string;
 };
 
+type SendUnstyledMessageOptions = {
+  channelName?: string;
+  symbol?: string;
+  messages: unknown[];
+};
+
+type TemplateOptions = {
+  title?: string;
+  description?: string;
+};
+
 interface IRequestOptions {
   botToken?: string;
   chatId?: string;
 }
 
-interface IJetbrainsSpaceLogOptions extends ILogOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface IJetbrainsSpaceLogOptions
+  extends IRequestOptions,
+    ILogOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceInfoOptions extends IInfoOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface IJetbrainsSpaceInfoOptions
+  extends IRequestOptions,
+    IInfoOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceWarnOptions extends IWarnOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface IJetbrainsSpaceWarnOptions
+  extends IRequestOptions,
+    IWarnOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceErrorOptions extends IErrorOptions, IRequestOptions {
-  title?: string;
-  description?: string;
-}
+interface IJetbrainsSpaceErrorOptions
+  extends IRequestOptions,
+    IErrorOptions<TemplateOptions> {}
 
 interface IJetbrainsSpaceSuccessOptions
-  extends ISuccessOptions,
-    IRequestOptions {
-  title?: string;
-  description?: string;
-}
+  extends IRequestOptions,
+    ISuccessOptions<TemplateOptions> {}
 
 type JetbrainsSpaceLogProviderConfig = {
   baseUrl?: string;
@@ -60,6 +65,7 @@ type JetbrainsSpaceLogProviderConfig = {
   channelName?: string;
 };
 
+/** @deprecated JetBrains Space will no longer be available after June 1, 2025 */
 export class JetbrainsSpaceLogProvider implements ILogProvider {
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
@@ -72,98 +78,156 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
   }
 
   async log(options: IJetbrainsSpaceLogOptions) {
-    const { title, description, labels, context, ...message } = options;
+    await LogMethodOptions.switch<IJetbrainsSpaceLogOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const { title, description, labels, context } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        title && `${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            title && `${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async info(options: IJetbrainsSpaceInfoOptions) {
-    const {
-      title = 'Information',
-      description,
-      labels,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<IJetbrainsSpaceInfoOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: ':information_source:',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const {
+          title = 'Information',
+          description,
+          labels,
+          context,
+        } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `:information_source: ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `:information_source: ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async warn(options: IJetbrainsSpaceWarnOptions) {
-    const {
-      title = 'Warning',
-      description,
-      labels,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<IJetbrainsSpaceWarnOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: ':warning:',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const { title = 'Warning', description, labels, context } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `:warning: ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `:warning: ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async error(options: IJetbrainsSpaceErrorOptions) {
-    const {
-      title = 'An error occurred',
-      description,
-      labels,
-      error,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<IJetbrainsSpaceErrorOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: ':name_badge:',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const {
+          title = 'An error occurred',
+          description,
+          labels,
+          error,
+          context,
+        } = template;
 
-    await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `:name_badge: ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        `${this._buildErrorRow(error)}\n`,
-        context && this._buildContextRow(context),
-      ),
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `:name_badge: ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            `${this._buildErrorRow(error)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
     });
   }
 
   async success(options: IJetbrainsSpaceSuccessOptions) {
-    const {
-      title = 'Success',
-      labels,
-      description,
-      context,
-      ...message
-    } = options;
+    await LogMethodOptions.switch<IJetbrainsSpaceSuccessOptions>({
+      options,
+      unstyled: async (messages, options) => {
+        await this._sendUnstyledMessage({
+          ...options,
+          symbol: ':white_check_mark:',
+          messages,
+        });
+      },
+      styled: async (template, options) => {
+        const { title = 'Success', labels, description, context } = template;
+
+        await this._sendMessage({
+          ...options,
+          text: this._rows(
+            `:white_check_mark: ${title}\n`,
+            description && `${description}\n`,
+            labels && `${this._buildLabelsRow(labels)}\n`,
+            context && this._buildContextRow(context),
+          ),
+        });
+      },
+    });
+  }
+
+  private async _sendUnstyledMessage(options: SendUnstyledMessageOptions) {
+    const { symbol, messages, ...delegatedOptions } = options;
+
+    const stringifiedMessages = messages
+      .map((item) => Json.stringify(item))
+      .join(' ');
 
     await this._sendMessage({
-      ...message,
-      text: this._rows(
-        `:white_check_mark: ${title}\n`,
-        description && `${description}\n`,
-        labels && `${this._buildLabelsRow(labels)}\n`,
-        context && this._buildContextRow(context),
-      ),
+      ...delegatedOptions,
+      text: symbol ? `${symbol} ${stringifiedMessages}` : stringifiedMessages,
     });
   }
 

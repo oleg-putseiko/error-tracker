@@ -9,6 +9,7 @@ import {
   type IErrorOptions,
   type ILogProvider,
 } from './base';
+import { LogMethodOptions } from '../utils/log-method-options';
 
 enum TerminalTextColor {
   BlueBold = '\x1b[1;34m',
@@ -44,29 +45,21 @@ type TitleMessagesData = {
   labels?: LogLabel[];
 };
 
-interface IConsoleDebugOptions extends IDebugOptions {
-  text: string;
-}
-
-interface IConsoleLogOptions extends ILogOptions {
-  text: string;
-}
-
-interface IConsoleInfoOptions extends IInfoOptions {
-  text: string;
-}
-
-interface IConsoleWarnOptions extends IWarnOptions {
-  text: string;
-}
-
-interface IConsoleErrorOptions extends IErrorOptions {
+type TemplateOptions = {
   text?: string;
-}
+};
 
-interface IConsoleSuccessOptions extends ISuccessOptions {
-  text: string;
-}
+interface IConsoleDebugOptions extends IDebugOptions<TemplateOptions> {}
+
+interface IConsoleLogOptions extends ILogOptions<TemplateOptions> {}
+
+interface IConsoleInfoOptions extends IInfoOptions<TemplateOptions> {}
+
+interface IConsoleWarnOptions extends IWarnOptions<TemplateOptions> {}
+
+interface IConsoleErrorOptions extends IErrorOptions<TemplateOptions> {}
+
+interface IConsoleSuccessOptions extends ISuccessOptions<TemplateOptions> {}
 
 const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
@@ -74,177 +67,237 @@ const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
 export class ConsoleLogProvider implements ILogProvider {
   debug(options: IConsoleDebugOptions) {
-    const { labels, text, context } = options;
-
-    const titleMessages = this._buildTitleMessages({
-      kind: {
-        value: 'debug',
-        styles: {
-          client: {
-            backgroundColor: 'rgba(200, 160, 217, 0.5)',
-            borderColor: 'rgb(182, 149, 191)',
-          },
-          terminal: {
-            textColor: TerminalTextColor.Magenta,
-          },
-        },
+    LogMethodOptions.switch<IConsoleDebugOptions>({
+      options,
+      unstyled: (messages) => {
+        console.debug(...messages);
       },
-      labels,
+      styled: (template) => {
+        const { labels, text, context } = template;
+
+        const titleMessages = this._buildTitleMessages({
+          kind: {
+            value: 'debug',
+            styles: {
+              client: {
+                backgroundColor: 'rgba(200, 160, 217, 0.5)',
+                borderColor: 'rgb(182, 149, 191)',
+              },
+              terminal: {
+                textColor: TerminalTextColor.Magenta,
+              },
+            },
+          },
+          labels,
+        });
+
+        const contextMessages = context
+          ? this._buildContextMessages(context)
+          : [];
+
+        const messages = this._messages(
+          ...titleMessages,
+          text,
+          __PARAGRAPH_SYMBOL__,
+          ...contextMessages,
+        );
+
+        console.debug(...messages);
+      },
     });
-
-    const contextMessages = context ? this._buildContextMessages(context) : [];
-
-    const messages = this._messages(
-      ...titleMessages,
-      text,
-      __PARAGRAPH_SYMBOL__,
-      ...contextMessages,
-    );
-
-    console.debug(...messages);
   }
 
   log(options: IConsoleLogOptions) {
-    const { labels, text, context } = options;
+    LogMethodOptions.switch<IConsoleLogOptions>({
+      options,
+      unstyled: (messages) => {
+        console.log(...messages);
+      },
+      styled: (template) => {
+        const { labels, text, context } = template;
 
-    const titleMessages = this._buildTitleMessages({ labels });
-    const contextMessages = context ? this._buildContextMessages(context) : [];
+        const titleMessages = this._buildTitleMessages({ labels });
+        const contextMessages = context
+          ? this._buildContextMessages(context)
+          : [];
 
-    const messages = this._messages(
-      ...titleMessages,
-      text,
-      __PARAGRAPH_SYMBOL__,
-      ...contextMessages,
-    );
+        const messages = this._messages(
+          ...titleMessages,
+          text,
+          __PARAGRAPH_SYMBOL__,
+          ...contextMessages,
+        );
 
-    console.log(...messages);
+        console.log(...messages);
+      },
+    });
   }
 
   info(options: IConsoleInfoOptions) {
-    const { labels, text, context } = options;
-
-    const titleMessages = this._buildTitleMessages({
-      kind: {
-        value: 'info',
-        styles: {
-          client: {
-            backgroundColor: 'rgba(68, 123, 242, 0.4)',
-            borderColor: 'rgba(68, 120, 242, 0.7)',
-          },
-          terminal: {
-            textColor: TerminalTextColor.BlueBold,
-          },
-        },
+    LogMethodOptions.switch<IConsoleInfoOptions>({
+      options,
+      unstyled: (messages) => {
+        console.info(...messages);
       },
-      labels,
+      styled: (template) => {
+        const { labels, text, context } = template;
+
+        const titleMessages = this._buildTitleMessages({
+          kind: {
+            value: 'info',
+            styles: {
+              client: {
+                backgroundColor: 'rgba(68, 123, 242, 0.4)',
+                borderColor: 'rgba(68, 120, 242, 0.7)',
+              },
+              terminal: {
+                textColor: TerminalTextColor.BlueBold,
+              },
+            },
+          },
+          labels,
+        });
+
+        const contextMessages = context
+          ? this._buildContextMessages(context)
+          : [];
+
+        const messages = this._messages(
+          ...titleMessages,
+          text,
+          __PARAGRAPH_SYMBOL__,
+          ...contextMessages,
+        );
+
+        console.info(...messages);
+      },
     });
-
-    const contextMessages = context ? this._buildContextMessages(context) : [];
-
-    const messages = this._messages(
-      ...titleMessages,
-      text,
-      __PARAGRAPH_SYMBOL__,
-      ...contextMessages,
-    );
-
-    console.info(...messages);
   }
 
   warn(options: IConsoleWarnOptions) {
-    const { labels, text, context } = options;
-
-    const titleMessages = this._buildTitleMessages({
-      kind: {
-        value: 'warning',
-        styles: {
-          client: {
-            backgroundColor: 'rgba(222, 184, 16, 0.5)',
-            borderColor: 'rgb(222, 184, 16)',
-          },
-          terminal: {
-            textColor: TerminalTextColor.YellowBold,
-          },
-        },
+    LogMethodOptions.switch<IConsoleWarnOptions>({
+      options,
+      unstyled: (messages) => {
+        console.warn(...messages);
       },
-      labels,
+      styled: (template) => {
+        const { labels, text, context } = template;
+
+        const titleMessages = this._buildTitleMessages({
+          kind: {
+            value: 'warning',
+            styles: {
+              client: {
+                backgroundColor: 'rgba(222, 184, 16, 0.5)',
+                borderColor: 'rgb(222, 184, 16)',
+              },
+              terminal: {
+                textColor: TerminalTextColor.YellowBold,
+              },
+            },
+          },
+          labels,
+        });
+
+        const contextMessages = context
+          ? this._buildContextMessages(context)
+          : [];
+
+        const messages = this._messages(
+          ...titleMessages,
+          text,
+          __PARAGRAPH_SYMBOL__,
+          ...contextMessages,
+        );
+
+        console.warn(...messages);
+      },
     });
-
-    const contextMessages = context ? this._buildContextMessages(context) : [];
-
-    const messages = this._messages(
-      ...titleMessages,
-      text,
-      __PARAGRAPH_SYMBOL__,
-      ...contextMessages,
-    );
-
-    console.warn(...messages);
   }
 
   error(options: IConsoleErrorOptions) {
-    const { labels, text, error, context } = options;
-
-    const titleMessages = this._buildTitleMessages({
-      kind: {
-        value: 'error',
-        styles: {
-          client: {
-            backgroundColor: 'rgba(242, 68, 68, 0.4)',
-            borderColor: 'rgba(242, 68, 68, 0.7)',
-          },
-          terminal: {
-            textColor: TerminalTextColor.RedBold,
-          },
-        },
+    LogMethodOptions.switch<IConsoleErrorOptions>({
+      options,
+      unstyled: (messages) => {
+        console.error(...messages);
       },
-      labels,
+      styled: (template) => {
+        const { labels, text, error, context } = template;
+
+        const titleMessages = this._buildTitleMessages({
+          kind: {
+            value: 'error',
+            styles: {
+              client: {
+                backgroundColor: 'rgba(242, 68, 68, 0.4)',
+                borderColor: 'rgba(242, 68, 68, 0.7)',
+              },
+              terminal: {
+                textColor: TerminalTextColor.RedBold,
+              },
+            },
+          },
+          labels,
+        });
+
+        const errorMessages = this._buildErrorMessages(error);
+        const contextMessages = context
+          ? this._buildContextMessages(context)
+          : [];
+
+        const messages = this._messages(
+          ...titleMessages,
+          text,
+          __PARAGRAPH_SYMBOL__,
+          ...errorMessages,
+          __PARAGRAPH_SYMBOL__,
+          ...contextMessages,
+        );
+
+        console.error(...messages);
+      },
     });
-
-    const errorMessages = this._buildErrorMessages(error);
-    const contextMessages = context ? this._buildContextMessages(context) : [];
-
-    const messages = this._messages(
-      ...titleMessages,
-      text,
-      __PARAGRAPH_SYMBOL__,
-      ...errorMessages,
-      __PARAGRAPH_SYMBOL__,
-      ...contextMessages,
-    );
-
-    console.error(...messages);
   }
 
   success(options: IConsoleSuccessOptions) {
-    const { labels, text, context } = options;
-
-    const titleMessages = this._buildTitleMessages({
-      kind: {
-        value: 'success',
-        styles: {
-          client: {
-            backgroundColor: 'rgba(68, 242, 71, 0.4)',
-            borderColor: 'rgba(68, 242, 94, 0.7)',
-          },
-          terminal: {
-            textColor: TerminalTextColor.GreenBold,
-          },
-        },
+    LogMethodOptions.switch<IConsoleSuccessOptions>({
+      options,
+      unstyled: (messages) => {
+        console.log(...messages);
       },
-      labels,
+      styled: (template) => {
+        const { labels, text, context } = template;
+
+        const titleMessages = this._buildTitleMessages({
+          kind: {
+            value: 'success',
+            styles: {
+              client: {
+                backgroundColor: 'rgba(68, 242, 71, 0.4)',
+                borderColor: 'rgba(68, 242, 94, 0.7)',
+              },
+              terminal: {
+                textColor: TerminalTextColor.GreenBold,
+              },
+            },
+          },
+          labels,
+        });
+
+        const contextMessages = context
+          ? this._buildContextMessages(context)
+          : [];
+
+        const messages = this._messages(
+          ...titleMessages,
+          text,
+          __PARAGRAPH_SYMBOL__,
+          ...contextMessages,
+        );
+
+        console.log(...messages);
+      },
     });
-
-    const contextMessages = context ? this._buildContextMessages(context) : [];
-
-    const messages = this._messages(
-      ...titleMessages,
-      text,
-      __PARAGRAPH_SYMBOL__,
-      ...contextMessages,
-    );
-
-    console.log(...messages);
   }
 
   private _buildTitleMessages(data: TitleMessagesData): string[] {

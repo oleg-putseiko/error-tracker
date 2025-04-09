@@ -21,11 +21,8 @@ type ProviderOptions<
   TProviders extends Providers,
   TLogKey extends keyof ILogProvider,
 > = {
-  [_Id in keyof TProviders]: TProviders[_Id][TLogKey] extends (
-    options: infer _MethodOptions,
-  ) => any
-    ? CommonProviderOptions & _MethodOptions
-    : never;
+  [_Id in keyof TProviders]: CommonProviderOptions &
+    Parameters<Exclude<TProviders[_Id][TLogKey], undefined>>[0];
 };
 
 type DebugOptions<TProviders extends Providers> = IDebugOptions & {
@@ -69,7 +66,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   async debug(options: DebugOptions<TProviders>) {
-    const { context, providers } = options;
+    const { providers, ...delegatedOptions } = options;
 
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
@@ -77,9 +74,13 @@ export class Logger<TProviders extends Providers> {
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.debug?.({
-            context,
-            labels: this._getDefaultLabels(),
-            ...(providerOptions ?? {}),
+            ...delegatedOptions,
+            ...providerOptions,
+            template: {
+              labels: this._getDefaultLabels(),
+              ...delegatedOptions.template,
+              ...providerOptions?.template,
+            },
           });
         }
       }),
@@ -87,7 +88,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   async log(options: LogOptions<TProviders>) {
-    const { context, providers } = options;
+    const { providers, ...delegatedOptions } = options;
 
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
@@ -95,9 +96,13 @@ export class Logger<TProviders extends Providers> {
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.log({
-            context,
-            labels: this._getDefaultLabels(),
-            ...(providerOptions ?? {}),
+            ...delegatedOptions,
+            ...providerOptions,
+            template: {
+              labels: this._getDefaultLabels(),
+              ...delegatedOptions.template,
+              ...providerOptions?.template,
+            },
           });
         }
       }),
@@ -105,7 +110,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   async info(options: InfoOptions<TProviders>) {
-    const { context, providers } = options;
+    const { providers, ...delegatedOptions } = options;
 
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
@@ -113,9 +118,13 @@ export class Logger<TProviders extends Providers> {
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.info({
-            context,
-            labels: this._getDefaultLabels(),
-            ...(providerOptions ?? {}),
+            ...delegatedOptions,
+            ...providerOptions,
+            template: {
+              labels: this._getDefaultLabels(),
+              ...delegatedOptions.template,
+              ...providerOptions?.template,
+            },
           });
         }
       }),
@@ -123,7 +132,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   async warn(options: WarnOptions<TProviders>) {
-    const { context, providers } = options;
+    const { providers, ...delegatedOptions } = options;
 
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
@@ -131,9 +140,13 @@ export class Logger<TProviders extends Providers> {
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.warn({
-            context,
-            labels: this._getDefaultLabels(),
-            ...(providerOptions ?? {}),
+            ...delegatedOptions,
+            ...providerOptions,
+            template: {
+              labels: this._getDefaultLabels(),
+              ...delegatedOptions.template,
+              ...providerOptions?.template,
+            },
           });
         }
       }),
@@ -141,7 +154,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   async error(options: ErrorOptions<TProviders>) {
-    const { error, context, providers } = options;
+    const { providers, ...delegatedOptions } = options;
 
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
@@ -149,10 +162,16 @@ export class Logger<TProviders extends Providers> {
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.error({
-            error,
-            context,
-            labels: this._getDefaultLabels(),
-            ...(providerOptions ?? {}),
+            ...delegatedOptions,
+            ...providerOptions,
+            template: {
+              labels: this._getDefaultLabels(),
+              ...delegatedOptions.template,
+              ...providerOptions?.template,
+              error:
+                providerOptions?.template?.error ??
+                delegatedOptions.template?.error,
+            },
           });
         }
       }),
@@ -160,7 +179,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   async success(options: SuccessOptions<TProviders>) {
-    const { context, providers } = options;
+    const { providers, ...delegatedOptions } = options;
 
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
@@ -168,9 +187,13 @@ export class Logger<TProviders extends Providers> {
 
         if (providerOptions?.enabled ?? this._isEnabled) {
           return provider.success({
-            context,
-            labels: this._getDefaultLabels(),
-            ...(providerOptions ?? {}),
+            ...delegatedOptions,
+            ...providerOptions,
+            template: {
+              labels: this._getDefaultLabels(),
+              ...delegatedOptions.template,
+              ...providerOptions?.template,
+            },
           });
         }
       }),

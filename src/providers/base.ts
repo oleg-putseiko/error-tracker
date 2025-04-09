@@ -1,29 +1,50 @@
+type AnyObject = Record<string | number | symbol, unknown>;
+
 export type LogLabel = { name: string; value: string };
 
-export interface IContextualOptions {
+export type BaseTemplateOptions = {
   labels?: LogLabel[];
   context?: Record<string, unknown>;
+};
+
+export interface IUnstyledLogOptions {
+  messages?: unknown[];
 }
 
-export interface IDebugOptions extends IContextualOptions {}
-
-export interface ILogOptions extends IContextualOptions {}
-
-export interface IInfoOptions extends IContextualOptions {}
-
-export interface IWarnOptions extends IContextualOptions {}
-
-export interface IErrorOptions extends IContextualOptions {
-  error: unknown;
+export interface IStyledLogOptions<TTemplate extends AnyObject = AnyObject> {
+  template?: TTemplate & BaseTemplateOptions;
 }
 
-export interface ISuccessOptions extends IContextualOptions {}
+export interface IBaseOptions<TTemplate extends AnyObject = AnyObject>
+  extends IUnstyledLogOptions,
+    IStyledLogOptions<TTemplate> {}
 
+export interface IDebugOptions<TTemplate extends AnyObject = AnyObject>
+  extends IBaseOptions<TTemplate> {}
+
+export interface ILogOptions<TTemplate extends AnyObject = AnyObject>
+  extends IBaseOptions<TTemplate> {}
+
+export interface IInfoOptions<TTemplate extends AnyObject = AnyObject>
+  extends IBaseOptions<TTemplate> {}
+
+export interface IWarnOptions<TTemplate extends AnyObject = AnyObject>
+  extends IBaseOptions<TTemplate> {}
+
+export interface IErrorOptions<TTemplate extends AnyObject = AnyObject>
+  extends IBaseOptions<TTemplate & { error: unknown }> {}
+
+export interface ISuccessOptions<TTemplate extends AnyObject = AnyObject>
+  extends IBaseOptions<TTemplate> {}
+
+export interface ILogFunction<TOptions extends IBaseOptions> {
+  (options: TOptions): void | Promise<void>;
+}
 export interface ILogProvider {
-  debug?(options: IDebugOptions): void | Promise<void>;
-  log(options: ILogOptions): void | Promise<void>;
-  info(options: IInfoOptions): void | Promise<void>;
-  warn(options: IWarnOptions): void | Promise<void>;
-  error(options: IErrorOptions): void | Promise<void>;
-  success(options: ISuccessOptions): void | Promise<void>;
+  debug?: ILogFunction<IDebugOptions>;
+  log: ILogFunction<ILogOptions>;
+  info: ILogFunction<IInfoOptions>;
+  warn: ILogFunction<IWarnOptions>;
+  error: ILogFunction<IErrorOptions>;
+  success: ILogFunction<ISuccessOptions>;
 }
