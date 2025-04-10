@@ -67,29 +67,30 @@ const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
 export class ConsoleLogProvider implements ILogProvider {
   debug(options: IConsoleDebugOptions | unknown[]) {
+    const kind: LogKindDetails = {
+      value: 'debug',
+      styles: {
+        client: {
+          backgroundColor: 'rgba(200, 160, 217, 0.5)',
+          borderColor: 'rgb(182, 149, 191)',
+        },
+        terminal: {
+          textColor: TerminalTextColor.Magenta,
+        },
+      },
+    };
+
     LogMethodOptions.switch<IConsoleDebugOptions>({
       options,
       unstyled: (messages) => {
-        console.debug(...messages);
+        const kindMessages = this._buildTitleMessages({ kind });
+
+        console.debug(...kindMessages, ...messages);
       },
       styled: (template) => {
         const { labels, text, context } = template;
 
-        const titleMessages = this._buildTitleMessages({
-          kind: {
-            value: 'debug',
-            styles: {
-              client: {
-                backgroundColor: 'rgba(200, 160, 217, 0.5)',
-                borderColor: 'rgb(182, 149, 191)',
-              },
-              terminal: {
-                textColor: TerminalTextColor.Magenta,
-              },
-            },
-          },
-          labels,
-        });
+        const titleMessages = this._buildTitleMessages({ kind, labels });
 
         const contextMessages = context
           ? this._buildContextMessages(context)
@@ -116,13 +117,13 @@ export class ConsoleLogProvider implements ILogProvider {
       styled: (template) => {
         const { labels, text, context } = template;
 
-        const titleMessages = this._buildTitleMessages({ labels });
+        const labelMessages = this._buildTitleMessages({ labels });
         const contextMessages = context
           ? this._buildContextMessages(context)
           : [];
 
         const messages = this._messages(
-          ...titleMessages,
+          ...labelMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
@@ -134,29 +135,30 @@ export class ConsoleLogProvider implements ILogProvider {
   }
 
   info(options: IConsoleInfoOptions | unknown[]) {
+    const kind: LogKindDetails = {
+      value: 'info',
+      styles: {
+        client: {
+          backgroundColor: 'rgba(68, 123, 242, 0.4)',
+          borderColor: 'rgba(68, 120, 242, 0.7)',
+        },
+        terminal: {
+          textColor: TerminalTextColor.BlueBold,
+        },
+      },
+    };
+
     LogMethodOptions.switch<IConsoleInfoOptions>({
       options,
       unstyled: (messages) => {
-        console.info(...messages);
+        const kindMessages = this._buildTitleMessages({ kind });
+
+        console.info(...kindMessages, ...messages);
       },
       styled: (template) => {
         const { labels, text, context } = template;
 
-        const titleMessages = this._buildTitleMessages({
-          kind: {
-            value: 'info',
-            styles: {
-              client: {
-                backgroundColor: 'rgba(68, 123, 242, 0.4)',
-                borderColor: 'rgba(68, 120, 242, 0.7)',
-              },
-              terminal: {
-                textColor: TerminalTextColor.BlueBold,
-              },
-            },
-          },
-          labels,
-        });
+        const titleMessages = this._buildTitleMessages({ kind, labels });
 
         const contextMessages = context
           ? this._buildContextMessages(context)
@@ -175,29 +177,30 @@ export class ConsoleLogProvider implements ILogProvider {
   }
 
   warn(options: IConsoleWarnOptions | unknown[]) {
+    const kind: LogKindDetails = {
+      value: 'warning',
+      styles: {
+        client: {
+          backgroundColor: 'rgba(222, 184, 16, 0.5)',
+          borderColor: 'rgb(222, 184, 16)',
+        },
+        terminal: {
+          textColor: TerminalTextColor.YellowBold,
+        },
+      },
+    };
+
     LogMethodOptions.switch<IConsoleWarnOptions>({
       options,
       unstyled: (messages) => {
-        console.warn(...messages);
+        const kindMessages = this._buildTitleMessages({ kind });
+
+        console.warn(...kindMessages, ...messages);
       },
       styled: (template) => {
         const { labels, text, context } = template;
 
-        const titleMessages = this._buildTitleMessages({
-          kind: {
-            value: 'warning',
-            styles: {
-              client: {
-                backgroundColor: 'rgba(222, 184, 16, 0.5)',
-                borderColor: 'rgb(222, 184, 16)',
-              },
-              terminal: {
-                textColor: TerminalTextColor.YellowBold,
-              },
-            },
-          },
-          labels,
-        });
+        const titleMessages = this._buildTitleMessages({ kind, labels });
 
         const contextMessages = context
           ? this._buildContextMessages(context)
@@ -216,29 +219,30 @@ export class ConsoleLogProvider implements ILogProvider {
   }
 
   error(options: IConsoleErrorOptions | unknown[]) {
+    const kind: LogKindDetails = {
+      value: 'error',
+      styles: {
+        client: {
+          backgroundColor: 'rgba(242, 68, 68, 0.4)',
+          borderColor: 'rgba(242, 68, 68, 0.7)',
+        },
+        terminal: {
+          textColor: TerminalTextColor.RedBold,
+        },
+      },
+    };
+
     LogMethodOptions.switch<IConsoleErrorOptions>({
       options,
       unstyled: (messages) => {
-        console.error(...messages);
+        const kindMessages = this._buildTitleMessages({ kind });
+
+        console.error(...kindMessages, ...messages);
       },
       styled: (template) => {
         const { labels, text, error, context } = template;
 
-        const titleMessages = this._buildTitleMessages({
-          kind: {
-            value: 'error',
-            styles: {
-              client: {
-                backgroundColor: 'rgba(242, 68, 68, 0.4)',
-                borderColor: 'rgba(242, 68, 68, 0.7)',
-              },
-              terminal: {
-                textColor: TerminalTextColor.RedBold,
-              },
-            },
-          },
-          labels,
-        });
+        const titleMessages = this._buildTitleMessages({ kind, labels });
 
         const errorMessages = this._buildErrorMessages(error);
         const contextMessages = context
@@ -260,29 +264,30 @@ export class ConsoleLogProvider implements ILogProvider {
   }
 
   success(options: IConsoleSuccessOptions | unknown[]) {
+    const kind: LogKindDetails = {
+      value: 'success',
+      styles: {
+        client: {
+          backgroundColor: 'rgba(68, 242, 71, 0.4)',
+          borderColor: 'rgba(68, 242, 94, 0.7)',
+        },
+        terminal: {
+          textColor: TerminalTextColor.GreenBold,
+        },
+      },
+    };
+
     LogMethodOptions.switch<IConsoleSuccessOptions>({
       options,
       unstyled: (messages) => {
-        console.log(...messages);
+        const kindMessages = this._buildTitleMessages({ kind });
+
+        console.log(...kindMessages, ...messages);
       },
       styled: (template) => {
         const { labels, text, context } = template;
 
-        const titleMessages = this._buildTitleMessages({
-          kind: {
-            value: 'success',
-            styles: {
-              client: {
-                backgroundColor: 'rgba(68, 242, 71, 0.4)',
-                borderColor: 'rgba(68, 242, 94, 0.7)',
-              },
-              terminal: {
-                textColor: TerminalTextColor.GreenBold,
-              },
-            },
-          },
-          labels,
-        });
+        const titleMessages = this._buildTitleMessages({ kind, labels });
 
         const contextMessages = context
           ? this._buildContextMessages(context)

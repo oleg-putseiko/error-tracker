@@ -32,7 +32,7 @@ export interface IWarnOptions<TTemplate extends AnyObject = AnyObject>
   extends IBaseOptions<TTemplate> {}
 
 export interface IErrorOptions<TTemplate extends AnyObject = AnyObject>
-  extends IBaseOptions<TTemplate & { error: unknown }> {}
+  extends IBaseOptions<TTemplate & { error?: unknown }> {}
 
 export interface ISuccessOptions<TTemplate extends AnyObject = AnyObject>
   extends IBaseOptions<TTemplate> {}

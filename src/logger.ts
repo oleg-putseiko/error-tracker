@@ -21,7 +21,7 @@ type ProviderOptions<
   TProviders extends Providers,
   TLogKey extends keyof ILogProvider,
 > = {
-  [_Id in keyof TProviders]: CommonProviderOptions &
+  [_Id in keyof TProviders]?: CommonProviderOptions &
     Exclude<
       Parameters<Exclude<TProviders[_Id][TLogKey], undefined>>[0],
       unknown[]
@@ -52,6 +52,14 @@ type SuccessOptions<TProviders extends Providers> = ISuccessOptions & {
   providers?: ProviderOptions<TProviders, 'success'>;
 };
 
+type ExecuteOptions<TProviders extends Providers> =
+  | DebugOptions<TProviders>
+  | LogOptions<TProviders>
+  | InfoOptions<TProviders>
+  | WarnOptions<TProviders>
+  | ErrorOptions<TProviders>
+  | SuccessOptions<TProviders>;
+
 type ErrorTrackerConfig<TProviders extends Providers> = {
   providers: TProviders;
   enabled?: boolean;
@@ -77,158 +85,37 @@ export class Logger<TProviders extends Providers> {
   }
 
   async debug(options: DebugOptions<TProviders> | unknown[]) {
-    await Promise.allSettled(
-      Object.entries(this._providers).map(([id, provider]) => {
-        if (Array.isArray(options)) {
-          if (this._isEnabled) return provider.debug?.(options);
-          throw new DisabledProviderError(id);
-        }
-
-        const { providers, ...delegatedOptions } = options;
-
-        const providerOptions = providers?.[id];
-
-        if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider.debug?.({
-            ...delegatedOptions,
-            ...providerOptions,
-            template: {
-              labels: this._getDefaultLabels(),
-              ...delegatedOptions.template,
-              ...providerOptions?.template,
-            },
-          });
-        }
-
-        throw new DisabledProviderError(id);
-      }),
-    );
+    await this._execute('debug', options);
   }
 
   async log(options: LogOptions<TProviders> | unknown[]) {
-    await Promise.allSettled(
-      Object.entries(this._providers).map(([id, provider]) => {
-        if (Array.isArray(options)) {
-          if (this._isEnabled) return provider.log(options);
-          throw new DisabledProviderError(id);
-        }
-
-        const { providers, ...delegatedOptions } = options;
-
-        const providerOptions = providers?.[id];
-
-        if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider.log({
-            ...delegatedOptions,
-            ...providerOptions,
-            template: {
-              labels: this._getDefaultLabels(),
-              ...delegatedOptions.template,
-              ...providerOptions?.template,
-            },
-          });
-        }
-
-        throw new DisabledProviderError(id);
-      }),
-    );
+    await this._execute('log', options);
   }
 
   async info(options: InfoOptions<TProviders> | unknown[]) {
-    await Promise.allSettled(
-      Object.entries(this._providers).map(([id, provider]) => {
-        if (Array.isArray(options)) {
-          if (this._isEnabled) return provider.info(options);
-          throw new DisabledProviderError(id);
-        }
-
-        const { providers, ...delegatedOptions } = options;
-
-        const providerOptions = providers?.[id];
-
-        if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider.info({
-            ...delegatedOptions,
-            ...providerOptions,
-            template: {
-              labels: this._getDefaultLabels(),
-              ...delegatedOptions.template,
-              ...providerOptions?.template,
-            },
-          });
-        }
-
-        throw new DisabledProviderError(id);
-      }),
-    );
+    await this._execute('info', options);
   }
 
   async warn(options: WarnOptions<TProviders> | unknown[]) {
-    await Promise.allSettled(
-      Object.entries(this._providers).map(([id, provider]) => {
-        if (Array.isArray(options)) {
-          if (this._isEnabled) return provider.warn(options);
-          throw new DisabledProviderError(id);
-        }
-
-        const { providers, ...delegatedOptions } = options;
-
-        const providerOptions = providers?.[id];
-
-        if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider.warn({
-            ...delegatedOptions,
-            ...providerOptions,
-            template: {
-              labels: this._getDefaultLabels(),
-              ...delegatedOptions.template,
-              ...providerOptions?.template,
-            },
-          });
-        }
-
-        throw new DisabledProviderError(id);
-      }),
-    );
+    await this._execute('warn', options);
   }
 
   async error(options: ErrorOptions<TProviders> | unknown[]) {
-    await Promise.allSettled(
-      Object.entries(this._providers).map(([id, provider]) => {
-        if (Array.isArray(options)) {
-          if (this._isEnabled) return provider.warn(options);
-          throw new DisabledProviderError(id);
-        }
-
-        const { providers, ...delegatedOptions } = options;
-
-        const providerOptions = providers?.[id];
-
-        if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider.error({
-            ...delegatedOptions,
-            ...providerOptions,
-            template: {
-              labels: this._getDefaultLabels(),
-              ...delegatedOptions.template,
-              ...providerOptions?.template,
-              error:
-                providerOptions?.template?.error ??
-                delegatedOptions.template?.error,
-            },
-          });
-        }
-
-        throw new DisabledProviderError(id);
-      }),
-    );
+    await this._execute('error', options);
   }
 
   async success(options: SuccessOptions<TProviders> | unknown[]) {
+    await this._execute('success', options);
+  }
+
+  private async _execute(
+    method: keyof ILogProvider,
+    options: ExecuteOptions<TProviders> | unknown[],
+  ) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
         if (Array.isArray(options)) {
-          if (this._isEnabled) return provider.warn(options);
+          if (this._isEnabled) return provider[method]?.(options);
           throw new DisabledProviderError(id);
         }
 
@@ -237,7 +124,7 @@ export class Logger<TProviders extends Providers> {
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider.success({
+          return provider[method]?.({
             ...delegatedOptions,
             ...providerOptions,
             template: {

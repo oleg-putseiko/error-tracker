@@ -9,6 +9,7 @@ import {
   type ILogProvider,
 } from './base';
 import { LogMethodOptions } from '../utils/log-method-options';
+import { isObject } from '../utils/guards';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
@@ -219,8 +220,9 @@ export class TelegramLogProvider implements ILogProvider {
     const { symbol, messages, ...delegatedOptions } = options;
 
     const stringifiedMessages = messages
-      .map((item) => Json.stringify(item))
-      .join(' ');
+      .map((item) => (isObject(item) ? Json.stringify(item) : item))
+      .join(' ')
+      .replace(/([{}\\[\]()])/gu, '\\$1');
 
     await this._sendMessage({
       ...delegatedOptions,
@@ -242,7 +244,7 @@ export class TelegramLogProvider implements ILogProvider {
       text: options.text,
     };
 
-    await this._fetch('/sendMessage', { method: 'POST', params });
+    return await this._fetch('/sendMessage', { method: 'POST', params });
   }
 
   private async _fetch(url: string, options?: FetchOptions) {
