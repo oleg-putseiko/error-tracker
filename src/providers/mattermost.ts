@@ -1,5 +1,5 @@
-import { isObject } from '../../utils/guards';
-import { LogMethodOptions } from '../../utils/log-method-options';
+import { isObject } from '../utils/guards';
+import { LogMethodOptions } from '../utils/log-method-options';
 import {
   IInfoOptions,
   ILogOptions,
@@ -8,7 +8,7 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from '../base';
+} from './base';
 import { Json } from 'detailed-json';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
@@ -20,12 +20,16 @@ type FetchOptions = Omit<RequestInit, 'body'> & {
 };
 
 type SendMessageOptions = {
-  channelName?: string;
+  channelId?: string;
+  baseUrl?: string;
+  apiKey?: string;
   text: string;
 };
 
 type SendUnstyledMessageOptions = {
-  channelName?: string;
+  channelId?: string;
+  baseUrl?: string;
+  apiKey?: string;
   symbol?: string;
   messages: unknown[];
 };
@@ -36,50 +40,48 @@ type TemplateOptions = {
 };
 
 interface IRequestOptions {
-  botToken?: string;
-  chatId?: string;
+  channelId?: string;
 }
 
-interface IJetbrainsSpaceLogOptions
+interface IMattermostLogOptions
   extends IRequestOptions,
     ILogOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceInfoOptions
+interface IMattermostInfoOptions
   extends IRequestOptions,
     IInfoOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceWarnOptions
+interface IMattermostWarnOptions
   extends IRequestOptions,
     IWarnOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceErrorOptions
+interface IMattermostErrorOptions
   extends IRequestOptions,
     IErrorOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceSuccessOptions
+interface IMattermostSuccessOptions
   extends IRequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-type JetbrainsSpaceLogProviderConfig = {
+type MattermostLogProviderConfig = {
   baseUrl?: string;
   apiKey?: string;
-  channelName?: string;
+  channelId?: string;
 };
 
-/** @deprecated JetBrains Space will no longer be available after June 1, 2025 */
-export class JetbrainsSpaceLogProvider implements ILogProvider {
+export class MattermostLogProvider implements ILogProvider {
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
-  private readonly _channelName?: string;
+  private readonly _channelId?: string;
 
-  constructor(config: JetbrainsSpaceLogProviderConfig) {
+  constructor(config: MattermostLogProviderConfig) {
     this._baseUrl = config.baseUrl;
     this._apiKey = config.apiKey;
-    this._channelName = config.channelName;
+    this._channelId = config.channelId;
   }
 
-  async log(options: IJetbrainsSpaceLogOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceLogOptions>({
+  async log(options: IMattermostLogOptions | unknown[]) {
+    await LogMethodOptions.switch<IMattermostLogOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -103,8 +105,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async info(options: IJetbrainsSpaceInfoOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceInfoOptions>({
+  async info(options: IMattermostInfoOptions | unknown[]) {
+    await LogMethodOptions.switch<IMattermostInfoOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -134,8 +136,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async warn(options: IJetbrainsSpaceWarnOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceWarnOptions>({
+  async warn(options: IMattermostWarnOptions | unknown[]) {
+    await LogMethodOptions.switch<IMattermostWarnOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -160,8 +162,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async error(options: IJetbrainsSpaceErrorOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceErrorOptions>({
+  async error(options: IMattermostErrorOptions | unknown[]) {
+    await LogMethodOptions.switch<IMattermostErrorOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -193,8 +195,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async success(options: IJetbrainsSpaceSuccessOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceSuccessOptions>({
+  async success(options: IMattermostSuccessOptions | unknown[]) {
+    await LogMethodOptions.switch<IMattermostSuccessOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -233,24 +235,18 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
   }
 
   private async _sendMessage(options: SendMessageOptions) {
-    const channelName = options?.channelName ?? this._channelName;
+    const channelId = options?.channelId ?? this._channelId;
 
-    if (!channelName) {
-      throw new TypeError('Jetbrains Space channel name is not defined');
+    if (!channelId) {
+      throw new TypeError('Mattermost channel id is not defined');
     }
 
     const body = {
-      channel: `channel:name:${channelName}`,
-      content: {
-        text: options.text,
-        className: 'ChatMessage.Text',
-      },
+      channel_id: channelId,
+      message: options.text,
     };
 
-    await this._fetch('/chats/messages/send-message', {
-      method: 'POST',
-      body,
-    });
+    await this._fetch('/posts', { method: 'POST', body });
   }
 
   private async _fetch(path: string, options?: FetchOptions) {
@@ -258,14 +254,14 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     const apiKey = options?.apiKey ?? this._apiKey;
 
     if (!baseUrl) {
-      throw new TypeError('Jetbrains Space base URL is not defined');
+      throw new TypeError('Mattermost base URL is not defined');
     }
 
     if (!apiKey) {
-      throw new TypeError('Jetbrains Space API key is not defined');
+      throw new TypeError('Mattermost API key is not defined');
     }
 
-    return await fetch(`${baseUrl}/api/http${path}`, {
+    return await fetch(`${baseUrl}/api/v4${path}`, {
       ...options,
       body: options?.body ? Json.stringify(options.body) : undefined,
       headers: {
