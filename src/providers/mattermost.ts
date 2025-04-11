@@ -1,5 +1,6 @@
 import { isObject } from '../utils/guards';
 import { LogMethodOptions } from '../utils/log-method-options';
+import { pluralize } from '../utils/pluralization';
 import {
   IInfoOptions,
   ILogOptions,
@@ -299,7 +300,9 @@ export class MattermostLogProvider implements ILogProvider {
   }
 
   private _buildDuplicatesRow(count: number): string {
-    return `\`[ ${count} duplicates found ]\``;
+    const subject = pluralize(count, 'duplicate', 'duplicates');
+
+    return `\`[ ${count} ${subject} found ]\``;
   }
 
   private _buildErrorRow(error: unknown): string {

@@ -10,6 +10,7 @@ import {
 } from './base';
 import { LogMethodOptions } from '../utils/log-method-options';
 import { isObject } from '../utils/guards';
+import { pluralize } from '../utils/pluralization';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
@@ -86,10 +87,15 @@ export class TelegramLogProvider implements ILogProvider {
       },
       styled: async (template, options) => {
         const { title, description, context, labels } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             title && `${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -117,10 +123,15 @@ export class TelegramLogProvider implements ILogProvider {
           labels,
           context,
         } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `ℹ️ ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -143,10 +154,15 @@ export class TelegramLogProvider implements ILogProvider {
       },
       styled: async (template, options) => {
         const { title = 'Warning', description, labels, context } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `⚠️ ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -175,10 +191,15 @@ export class TelegramLogProvider implements ILogProvider {
           error,
           context,
         } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `📛 ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -202,10 +223,15 @@ export class TelegramLogProvider implements ILogProvider {
       },
       styled: async (template, options) => {
         const { title = 'Success', description, labels, context } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `✅ ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -261,6 +287,12 @@ export class TelegramLogProvider implements ILogProvider {
       `https://api.telegram.org/bot${botToken}${url}${searchParams}`,
       init,
     );
+  }
+
+  private _buildDuplicatesRow(count: number): string {
+    const subject = pluralize(count, 'duplicate', 'duplicates');
+
+    return `\`[ ${count} ${subject} found ]\``;
   }
 
   private _buildErrorRow(error: unknown): string {
