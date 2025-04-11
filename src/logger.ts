@@ -8,6 +8,7 @@ import {
   ISuccessOptions,
   LogLabel,
   IDebugOptions,
+  IPerformOptions,
 } from './providers/base';
 import { isObject } from './utils/guards';
 
@@ -32,29 +33,38 @@ type ProviderOptions<
     >;
 };
 
-type DebugOptions<TProviders extends Providers> = IDebugOptions & {
+type Unperformed<T extends object> = Omit<T, keyof IPerformOptions>;
+
+type DebugOptions<TProviders extends Providers> = Unperformed<IDebugOptions> & {
   providers?: ProviderOptions<TProviders, 'debug'>;
+  deduplicate?: boolean | DeduplicateOptions;
 };
 
-type LogOptions<TProviders extends Providers> = ILogOptions & {
+type LogOptions<TProviders extends Providers> = Unperformed<ILogOptions> & {
   providers?: ProviderOptions<TProviders, 'log'>;
+  deduplicate?: boolean | DeduplicateOptions;
 };
 
-type InfoOptions<TProviders extends Providers> = IInfoOptions & {
+type InfoOptions<TProviders extends Providers> = Unperformed<IInfoOptions> & {
   providers?: ProviderOptions<TProviders, 'info'>;
+  deduplicate?: boolean | DeduplicateOptions;
 };
 
-type WarnOptions<TProviders extends Providers> = IWarnOptions & {
+type WarnOptions<TProviders extends Providers> = Unperformed<IWarnOptions> & {
   providers?: ProviderOptions<TProviders, 'warn'>;
+  deduplicate?: boolean | DeduplicateOptions;
 };
 
-type ErrorOptions<TProviders extends Providers> = IErrorOptions & {
+type ErrorOptions<TProviders extends Providers> = Unperformed<IErrorOptions> & {
   providers?: ProviderOptions<TProviders, 'error'>;
+  deduplicate?: boolean | DeduplicateOptions;
 };
 
-type SuccessOptions<TProviders extends Providers> = ISuccessOptions & {
-  providers?: ProviderOptions<TProviders, 'success'>;
-};
+type SuccessOptions<TProviders extends Providers> =
+  Unperformed<ISuccessOptions> & {
+    providers?: ProviderOptions<TProviders, 'success'>;
+    deduplicate?: boolean | DeduplicateOptions;
+  };
 
 type ExecuteOptions<TProviders extends Providers> =
   | DebugOptions<TProviders>
