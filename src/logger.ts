@@ -1,3 +1,4 @@
+import { Performer } from 'function-performer';
 import {
   IErrorOptions,
   ILogProvider,
@@ -8,12 +9,15 @@ import {
   LogLabel,
   IDebugOptions,
 } from './providers/base';
-
-// TODO: change the console log kind colors in the browser
+import { isObject } from './utils/guards';
 
 type Providers = Record<string, ILogProvider>;
 
-type CommonProviderOptions = {
+type DeduplicateOptions = {
+  interval: number;
+};
+
+type ExecutionOptions = {
   enabled?: boolean;
 };
 
@@ -21,7 +25,7 @@ type ProviderOptions<
   TProviders extends Providers,
   TLogKey extends keyof ILogProvider,
 > = {
-  [_Id in keyof TProviders]?: CommonProviderOptions &
+  [_Id in keyof TProviders]?: ExecutionOptions &
     Exclude<
       Parameters<Exclude<TProviders[_Id][TLogKey], undefined>>[0],
       unknown[]
@@ -63,6 +67,7 @@ type ExecuteOptions<TProviders extends Providers> =
 type ErrorTrackerConfig<TProviders extends Providers> = {
   providers: TProviders;
   enabled?: boolean;
+  deduplicate?: boolean | DeduplicateOptions;
 };
 
 const IS_WINDOW_DEFINED = typeof window !== 'undefined';
@@ -77,11 +82,24 @@ class DisabledProviderError extends Error {
 
 export class Logger<TProviders extends Providers> {
   private readonly _providers: TProviders;
+  private readonly _performer: Performer;
+
   private readonly _isEnabled: boolean;
+  private readonly _shouldDeduplicate: boolean;
 
   constructor(config: ErrorTrackerConfig<TProviders>) {
     this._providers = config.providers;
+
+    const deduplicationInterval = isObject(config.deduplicate)
+      ? config.deduplicate.interval
+      : 100;
+
+    this._performer = new Performer({
+      deduplication: { interval: deduplicationInterval },
+    });
+
     this._isEnabled = config.enabled ?? true;
+    this._shouldDeduplicate = !!config.deduplicate;
   }
 
   async debug(options: DebugOptions<TProviders> | unknown[]) {
@@ -112,10 +130,39 @@ export class Logger<TProviders extends Providers> {
     method: keyof ILogProvider,
     options: ExecuteOptions<TProviders> | unknown[],
   ) {
+    if (this._shouldDeduplicate) {
+      this._performer.deduplicate(
+        this._dispatchDeduplicatedEvent,
+        this,
+        method,
+        options,
+      );
+    } else {
+      await this._dispatchEvent(method, options);
+    }
+  }
+
+  private async _dispatchDeduplicatedEvent(
+    numberOfCalls: number,
+    context: this,
+    event: keyof ILogProvider,
+    options: ExecuteOptions<TProviders> | unknown[],
+  ) {
+    const delegatedOptions = Array.isArray(options)
+      ? options
+      : { ...options, numberOfCalls };
+
+    await context._dispatchEvent(event, delegatedOptions);
+  }
+
+  private async _dispatchEvent(
+    event: keyof ILogProvider,
+    options: ExecuteOptions<TProviders> | unknown[],
+  ) {
     await Promise.allSettled(
       Object.entries(this._providers).map(([id, provider]) => {
         if (Array.isArray(options)) {
-          if (this._isEnabled) return provider[method]?.(options);
+          if (this._isEnabled) return provider[event]?.(options);
           throw new DisabledProviderError(id);
         }
 
@@ -124,7 +171,7 @@ export class Logger<TProviders extends Providers> {
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider[method]?.({
+          return provider[event]?.({
             ...delegatedOptions,
             ...providerOptions,
             template: {

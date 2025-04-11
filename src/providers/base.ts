@@ -7,6 +7,10 @@ export type BaseTemplateOptions = {
   context?: Record<string, unknown>;
 };
 
+export interface IPerformOptions {
+  numberOfCalls?: number;
+}
+
 export interface IUnstyledLogOptions {
   messages?: unknown[];
 }
@@ -16,7 +20,8 @@ export interface IStyledLogOptions<TTemplate extends AnyObject = AnyObject> {
 }
 
 export interface IBaseOptions<TTemplate extends AnyObject = AnyObject>
-  extends IUnstyledLogOptions,
+  extends IPerformOptions,
+    IUnstyledLogOptions,
     IStyledLogOptions<TTemplate> {}
 
 export interface IDebugOptions<TTemplate extends AnyObject = AnyObject>
