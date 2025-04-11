@@ -91,10 +91,15 @@ export class MattermostLogProvider implements ILogProvider {
       },
       styled: async (template, options) => {
         const { title, description, labels, context } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             title && `${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -122,10 +127,15 @@ export class MattermostLogProvider implements ILogProvider {
           labels,
           context,
         } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `:information_source: ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -148,10 +158,15 @@ export class MattermostLogProvider implements ILogProvider {
       },
       styled: async (template, options) => {
         const { title = 'Warning', description, labels, context } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `:warning: ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -180,10 +195,15 @@ export class MattermostLogProvider implements ILogProvider {
           error,
           context,
         } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `:name_badge: ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -207,10 +227,15 @@ export class MattermostLogProvider implements ILogProvider {
       },
       styled: async (template, options) => {
         const { title = 'Success', labels, description, context } = template;
+        const { numberOfCalls } = options;
+
+        const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
 
         await this._sendMessage({
           ...options,
           text: this._rows(
+            numberOfDuplicates > 0 &&
+              `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
             `:white_check_mark: ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
@@ -271,6 +296,10 @@ export class MattermostLogProvider implements ILogProvider {
         ...options?.headers,
       },
     });
+  }
+
+  private _buildDuplicatesRow(count: number): string {
+    return `\`[ ${count} duplicates found ]\``;
   }
 
   private _buildErrorRow(error: unknown): string {
