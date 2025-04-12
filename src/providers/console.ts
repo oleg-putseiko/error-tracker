@@ -96,14 +96,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const messages = this._messages(
+        const message = this._addMessagePrefixes(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.debug(...messages);
+        console.debug(message);
       },
     });
   }
@@ -122,14 +122,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const messages = this._messages(
+        const message = this._addMessagePrefixes(
           ...labelMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.log(...messages);
+        console.log(message);
       },
     });
   }
@@ -164,14 +164,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const messages = this._messages(
+        const message = this._addMessagePrefixes(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.info(...messages);
+        console.info(message);
       },
     });
   }
@@ -206,14 +206,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const messages = this._messages(
+        const message = this._addMessagePrefixes(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.warn(...messages);
+        console.warn(message);
       },
     });
   }
@@ -249,7 +249,7 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const messages = this._messages(
+        const message = this._addMessagePrefixes(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
@@ -258,7 +258,7 @@ export class ConsoleLogProvider implements ILogProvider {
           ...contextMessages,
         );
 
-        console.error(...messages);
+        console.error(message);
       },
     });
   }
@@ -293,14 +293,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const messages = this._messages(
+        const message = this._addMessagePrefixes(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.log(...messages);
+        console.log(message);
       },
     });
   }
@@ -379,7 +379,26 @@ export class ConsoleLogProvider implements ILogProvider {
     return `${color}${message}${TerminalTextColor.Unset}`;
   }
 
-  private _messages(...messages: unknown[]): unknown[] {
+  private _addMessagePrefixes(...messages: unknown[]): string {
+    const message = this._formatMessages(messages).join(' ');
+
+    const numberOfNewLineSymbols = Array.from(
+      message.matchAll(/(\r?\n)/g),
+    ).length;
+
+    if (numberOfNewLineSymbols === 0) {
+      return `◦ ${message}`;
+    }
+
+    return (
+      '╭ ' +
+      message
+        .replace(/(\r?\n)/g, '$1│ ')
+        .replace(/(\r?\n)(│)([^\r\n]*)$/g, '$1╰$3')
+    );
+  }
+
+  private _formatMessages(messages: unknown[]): unknown[] {
     const filteredMessages: unknown[] = this._filterMessages(messages);
     const formattedMessages: unknown[] = [];
 
