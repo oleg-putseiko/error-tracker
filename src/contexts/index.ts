@@ -1,2 +1,2 @@
-export * from './base';
-export * from './vercel';
+export * from './base.js';
+export * from './vercel.js';

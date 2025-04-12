@@ -1,4 +1,4 @@
-import { IBaseOptions } from '../providers/base';
+import { IBaseOptions } from '../providers/base.js';
 
 type SwitchParams<TOptions extends IBaseOptions> = {
   options: TOptions | unknown[];

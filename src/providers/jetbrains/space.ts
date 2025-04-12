@@ -1,6 +1,6 @@
-import { isObject } from '../../utils/guards';
-import { LogMethodOptions } from '../../utils/log-method-options';
-import { pluralize } from '../../utils/pluralization';
+import { isObject } from '../../utils/guards.js';
+import { LogMethodOptions } from '../../utils/log-method-options.js';
+import { pluralize } from '../../utils/pluralization.js';
 import {
   IInfoOptions,
   ILogOptions,
@@ -9,7 +9,7 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from '../base';
+} from '../base.js';
 import { Json } from 'detailed-json';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;

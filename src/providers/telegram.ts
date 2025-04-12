@@ -7,10 +7,10 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from './base';
-import { LogMethodOptions } from '../utils/log-method-options';
-import { isObject } from '../utils/guards';
-import { pluralize } from '../utils/pluralization';
+} from './base.js';
+import { LogMethodOptions } from '../utils/log-method-options.js';
+import { isObject } from '../utils/guards.js';
+import { pluralize } from '../utils/pluralization.js';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 

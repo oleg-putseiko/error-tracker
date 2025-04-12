@@ -8,8 +8,8 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from './base';
-import { LogMethodOptions } from '../utils/log-method-options';
+} from './base.js';
+import { LogMethodOptions } from '../utils/log-method-options.js';
 
 enum TerminalTextColor {
   BlueBold = '\x1b[1;34m',

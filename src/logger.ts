@@ -9,8 +9,8 @@ import {
   LogLabel,
   IDebugOptions,
   IPerformOptions,
-} from './providers/base';
-import { isObject } from './utils/guards';
+} from './providers/base.js';
+import { isObject } from './utils/guards.js';
 
 type Providers = Record<string, ILogProvider>;
 

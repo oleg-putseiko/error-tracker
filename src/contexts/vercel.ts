@@ -1,4 +1,4 @@
-import { ILogContext } from './base';
+import { ILogContext } from './base.js';
 
 type VercelEnvironment = 'production' | 'preview' | 'development';
 
