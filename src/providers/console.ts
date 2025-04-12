@@ -66,6 +66,8 @@ const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
 const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 
+const IS_WINDOW_DEFINED = typeof window !== 'undefined';
+
 export class ConsoleLogProvider implements ILogProvider {
   debug(options: IConsoleDebugOptions | unknown[]) {
     const kind: LogKindDetails = {
@@ -97,14 +99,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const message = this._addMessagePrefixes(
+        const messages = this._formatMessages(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.debug(message);
+        console.debug(...messages);
       },
     });
   }
@@ -123,14 +125,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const message = this._addMessagePrefixes(
+        const messages = this._formatMessages(
           ...labelMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.log(message);
+        console.log(...messages);
       },
     });
   }
@@ -165,14 +167,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const message = this._addMessagePrefixes(
+        const messages = this._formatMessages(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.info(message);
+        console.info(...messages);
       },
     });
   }
@@ -207,14 +209,14 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const message = this._addMessagePrefixes(
+        const messages = this._formatMessages(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.warn(message);
+        console.warn(...messages);
       },
     });
   }
@@ -250,7 +252,7 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const message = this._addMessagePrefixes(
+        const messages = this._formatMessages(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
@@ -259,7 +261,7 @@ export class ConsoleLogProvider implements ILogProvider {
           ...contextMessages,
         );
 
-        console.error(message);
+        console.error(...messages);
       },
     });
   }
@@ -294,22 +296,22 @@ export class ConsoleLogProvider implements ILogProvider {
           ? this._buildContextMessages(context)
           : [];
 
-        const message = this._addMessagePrefixes(
+        const messages = this._formatMessages(
           ...titleMessages,
           text,
           __PARAGRAPH_SYMBOL__,
           ...contextMessages,
         );
 
-        console.log(message);
+        console.log(...messages);
       },
     });
   }
 
   private _buildTitleMessages(data: TitleMessagesData): string[] {
-    return typeof window === 'undefined'
-      ? this._buildTerminalTitleMessages(data)
-      : this._buildClientTitleMessages(data);
+    return IS_WINDOW_DEFINED
+      ? this._buildClientTitleMessages(data)
+      : this._buildTerminalTitleMessages(data);
   }
 
   private _buildTerminalTitleMessages(data: TitleMessagesData): string[] {
@@ -358,19 +360,19 @@ export class ConsoleLogProvider implements ILogProvider {
       ].join(';');
 
       return stringifiedLabels !== undefined
-        ? [`%c${kind.value} %c${stringifiedLabels}:`, kindStyles, labelStyles]
+        ? [`%c${kind.value}%c ${stringifiedLabels}:`, kindStyles, labelStyles]
         : [`%c${kind.value}:`, kindStyles];
     }
 
     return [`%c${stringifiedLabels}:`, labelStyles];
   }
 
-  private _buildErrorMessages(error: unknown): string[] {
-    return ['Error:', Json.stringify(error)];
+  private _buildErrorMessages(error: unknown): unknown[] {
+    return ['Error:', IS_WINDOW_DEFINED ? error : Json.stringify(error)];
   }
 
-  private _buildContextMessages(context: Record<string, unknown>): string[] {
-    return ['Context:', Json.stringify(context)];
+  private _buildContextMessages(context: Record<string, unknown>): unknown[] {
+    return ['Context:', IS_WINDOW_DEFINED ? context : Json.stringify(context)];
   }
 
   private _buildColoredTerminalMessage(
@@ -380,26 +382,7 @@ export class ConsoleLogProvider implements ILogProvider {
     return `${color}${message}${TerminalTextColor.Unset}`;
   }
 
-  private _addMessagePrefixes(...messages: unknown[]): string {
-    const message = this._formatMessages(messages).join(' ');
-
-    const numberOfNewLineSymbols = Array.from(
-      message.matchAll(/(\r?\n)/g),
-    ).length;
-
-    if (numberOfNewLineSymbols === 0) {
-      return `◦ ${message}`;
-    }
-
-    return (
-      '╭ ' +
-      message
-        .replace(/(\r?\n)/g, '$1│ ')
-        .replace(/(\r?\n)(│)([^\r\n]*)$/g, '$1╰$3')
-    );
-  }
-
-  private _formatMessages(messages: unknown[]): unknown[] {
+  private _formatMessages(...messages: unknown[]): unknown[] {
     const filteredMessages: unknown[] = this._filterMessages(messages);
     const formattedMessages: unknown[] = [];
 
@@ -425,7 +408,28 @@ export class ConsoleLogProvider implements ILogProvider {
       index++;
     }
 
-    return formattedMessages;
+    return IS_WINDOW_DEFINED
+      ? formattedMessages
+      : this._addMessagePrefixes(formattedMessages);
+  }
+
+  private _addMessagePrefixes(messages: unknown[]): unknown[] {
+    const joinedMessages = messages.join(' ');
+
+    const numberOfNewLineSymbols = Array.from(
+      joinedMessages.matchAll(/(\r?\n)/g),
+    ).length;
+
+    if (numberOfNewLineSymbols === 0) {
+      return [`◦ ${joinedMessages}`];
+    }
+
+    return [
+      '╭ ' +
+        joinedMessages
+          .replace(/(\r?\n)/g, '$1│ ')
+          .replace(/(\r?\n)(│)([^\r\n]*)$/g, '$1╰$3'),
+    ];
   }
 
   private _filterMessages(messages: unknown[]): unknown[] {
