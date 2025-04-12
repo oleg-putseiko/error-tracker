@@ -44,27 +44,27 @@ interface IRequestOptions {
   channelId?: string;
 }
 
-interface IMattermostLogOptions
+export interface IMattermostLogOptions
   extends IRequestOptions,
     ILogOptions<TemplateOptions> {}
 
-interface IMattermostInfoOptions
+export interface IMattermostInfoOptions
   extends IRequestOptions,
     IInfoOptions<TemplateOptions> {}
 
-interface IMattermostWarnOptions
+export interface IMattermostWarnOptions
   extends IRequestOptions,
     IWarnOptions<TemplateOptions> {}
 
-interface IMattermostErrorOptions
+export interface IMattermostErrorOptions
   extends IRequestOptions,
     IErrorOptions<TemplateOptions> {}
 
-interface IMattermostSuccessOptions
+export interface IMattermostSuccessOptions
   extends IRequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-type MattermostLogProviderConfig = {
+export type MattermostLogProviderConfig = {
   baseUrl?: string;
   apiKey?: string;
   channelId?: string;

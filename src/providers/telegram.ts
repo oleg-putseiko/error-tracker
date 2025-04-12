@@ -42,27 +42,27 @@ type RequestOptions = {
   chatId?: string;
 };
 
-interface ITelegramLogOptions
+export interface ITelegramLogOptions
   extends RequestOptions,
     ILogOptions<TemplateOptions> {}
 
-interface ITelegramInfoOptions
+export interface ITelegramInfoOptions
   extends RequestOptions,
     IInfoOptions<TemplateOptions> {}
 
-interface ITelegramWarnOptions
+export interface ITelegramWarnOptions
   extends RequestOptions,
     IWarnOptions<TemplateOptions> {}
 
-interface ITelegramErrorOptions
+export interface ITelegramErrorOptions
   extends RequestOptions,
     IErrorOptions<TemplateOptions> {}
 
-interface ITelegramSuccessOptions
+export interface ITelegramSuccessOptions
   extends RequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-type TelegramLogProviderConfig = {
+export type TelegramLogProviderConfig = {
   botToken?: string;
   chatId?: string;
 };

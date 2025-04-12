@@ -41,27 +41,27 @@ interface IRequestOptions {
   chatId?: string;
 }
 
-interface IJetbrainsSpaceLogOptions
+export interface IJetbrainsSpaceLogOptions
   extends IRequestOptions,
     ILogOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceInfoOptions
+export interface IJetbrainsSpaceInfoOptions
   extends IRequestOptions,
     IInfoOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceWarnOptions
+export interface IJetbrainsSpaceWarnOptions
   extends IRequestOptions,
     IWarnOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceErrorOptions
+export interface IJetbrainsSpaceErrorOptions
   extends IRequestOptions,
     IErrorOptions<TemplateOptions> {}
 
-interface IJetbrainsSpaceSuccessOptions
+export interface IJetbrainsSpaceSuccessOptions
   extends IRequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-type JetbrainsSpaceLogProviderConfig = {
+export type JetbrainsSpaceLogProviderConfig = {
   baseUrl?: string;
   apiKey?: string;
   channelName?: string;

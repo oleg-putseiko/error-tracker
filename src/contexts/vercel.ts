@@ -2,7 +2,7 @@ import { ILogContext } from './base';
 
 type VercelEnvironment = 'production' | 'preview' | 'development';
 
-interface IVercelLogContextProps {
+export interface IVercelLogContextProps {
   env: VercelEnvironment | null;
   targetEnv: VercelEnvironment | null;
   url: string | null;

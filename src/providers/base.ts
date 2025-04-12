@@ -2,7 +2,7 @@ type AnyObject = Record<string | number | symbol, unknown>;
 
 export type LogLabel = { name: string; value: string };
 
-export type BaseTemplateOptions = {
+type BaseTemplateOptions = {
   labels?: LogLabel[];
   context?: Record<string, unknown>;
 };

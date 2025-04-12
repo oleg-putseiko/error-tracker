@@ -49,17 +49,18 @@ type TemplateOptions = {
   text?: string;
 };
 
-interface IConsoleDebugOptions extends IDebugOptions<TemplateOptions> {}
+export interface IConsoleDebugOptions extends IDebugOptions<TemplateOptions> {}
 
-interface IConsoleLogOptions extends ILogOptions<TemplateOptions> {}
+export interface IConsoleLogOptions extends ILogOptions<TemplateOptions> {}
 
-interface IConsoleInfoOptions extends IInfoOptions<TemplateOptions> {}
+export interface IConsoleInfoOptions extends IInfoOptions<TemplateOptions> {}
 
-interface IConsoleWarnOptions extends IWarnOptions<TemplateOptions> {}
+export interface IConsoleWarnOptions extends IWarnOptions<TemplateOptions> {}
 
-interface IConsoleErrorOptions extends IErrorOptions<TemplateOptions> {}
+export interface IConsoleErrorOptions extends IErrorOptions<TemplateOptions> {}
 
-interface IConsoleSuccessOptions extends ISuccessOptions<TemplateOptions> {}
+export interface IConsoleSuccessOptions
+  extends ISuccessOptions<TemplateOptions> {}
 
 const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
