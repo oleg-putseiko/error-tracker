@@ -1929,12 +1929,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"function-performer@npm:^1.0.0-canary.0":
-  version: 1.0.0-canary.0
-  resolution: "function-performer@npm:1.0.0-canary.0"
+"function-performer@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "function-performer@npm:1.0.0"
   dependencies:
     fast-deep-equal: ^3.1.3
-  checksum: f33168b7767b818c0613dcbc7f3b28db584c9daa6a0b36a87312b3cb4d3e4f5d06752086333c2417c7f41d2874a45919d8440e22f0e87483d28be5d40a3254af
+  checksum: 99631ba87e53c3c78ac94efcdf6df066d81f13c87a7b060ecea3bba8ebaa961e090c04b465888dc791da966916168586c7ebb067968bc32195b308a3d48f2907
   languageName: node
   linkType: hard
 
@@ -3304,7 +3304,7 @@ __metadata:
     eslint: ^9.16.0
     eslint-config-prettier: ^10.1.1
     fast-deep-equal: ^3.1.3
-    function-performer: ^1.0.0-canary.0
+    function-performer: ^1.0.0
     husky: ^8.0.3
     lint-staged: ^15.0.2
     prettier: ^3.0.3
