@@ -170,9 +170,9 @@ export class Logger<TProviders extends Providers> {
     options: ExecuteOptions<TProviders> | unknown[],
   ) {
     await Promise.allSettled(
-      Object.entries(this._providers).map(([id, provider]) => {
+      Object.entries(this._providers).map(async ([id, provider]) => {
         if (Array.isArray(options)) {
-          if (this._isEnabled) return provider[event]?.(options);
+          if (this._isEnabled) return await provider[event]?.(options);
           throw new DisabledProviderError(id);
         }
 
@@ -181,7 +181,7 @@ export class Logger<TProviders extends Providers> {
         const providerOptions = providers?.[id];
 
         if (providerOptions?.enabled ?? this._isEnabled) {
-          return provider[event]?.({
+          return await provider[event]?.({
             ...delegatedOptions,
             ...providerOptions,
             template: {
