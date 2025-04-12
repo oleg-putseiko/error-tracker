@@ -1,6 +1,6 @@
 {
   "name": "signal-logger",
-  "version": "1.0.0-canary.2",
+  "version": "1.0.0-canary.3",
   "description": "A logger that allows you to send stylized or custom messages to a variety of services",
   "license": "MIT",
   "author": "Oleg Putseiko <oleg.putseiko@gmail.com> (https://github.com/oleg-putseiko)",
