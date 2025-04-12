@@ -1,16 +1,25 @@
 {
-  "name": "error-tracker",
+  "name": "signal-logger",
   "version": "0.1.0",
+  "description": "A logger that allows you to send stylized or custom messages to a variety of services",
   "license": "MIT",
   "author": "Oleg Putseiko <oleg.putseiko@gmail.com> (https://github.com/oleg-putseiko)",
-  "keywords": [],
-  "homepage": "https://github.com/oleg-putseiko/error-tracker",
+  "keywords": [
+    "logger",
+    "console",
+    "telegram",
+    "jetbrains",
+    "mattermost",
+    "event",
+    "message"
+  ],
+  "homepage": "https://github.com/oleg-putseiko/signal-logger",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oleg-putseiko/error-tracker"
+    "url": "https://github.com/oleg-putseiko/signal-logger"
   },
   "bugs": {
-    "url": "https://github.com/oleg-putseiko/error-tracker/issues"
+    "url": "https://github.com/oleg-putseiko/signal-logger/issues"
   },
   "scripts": {
     "build": "yarn build:swc && yarn build:tsc",

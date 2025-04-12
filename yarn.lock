@@ -1564,29 +1564,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"error-tracker@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "error-tracker@workspace:."
-  dependencies:
-    "@commitlint/cli": ^18.2.0
-    "@commitlint/config-conventional": ^18.1.0
-    "@swc/cli": ^0.5.2
-    "@swc/core": ^1.10.1
-    "@types/node": ^22.10.1
-    "@typescript-eslint/eslint-plugin": ^8.28.0
-    "@typescript-eslint/parser": ^8.28.0
-    detailed-json: ^1.0.1
-    eslint: ^9.16.0
-    eslint-config-prettier: ^10.1.1
-    fast-deep-equal: ^3.1.3
-    function-performer: ^1.0.0-canary.0
-    husky: ^8.0.3
-    lint-staged: ^15.0.2
-    prettier: ^3.0.3
-    typescript: ^5.7.2
-  languageName: unknown
-  linkType: soft
-
 "escalade@npm:^3.1.1":
   version: 3.2.0
   resolution: "escalade@npm:3.2.0"
@@ -3311,6 +3288,29 @@ __metadata:
   checksum: 64c757b498cb8629ffa5f75485340594d2f8189e9b08700e69199069c8e3070fb3e255f7ab873c05dc0b3cec412aea7402e10a5990cb6a050bd33ba062a6c549
   languageName: node
   linkType: hard
+
+"signal-logger@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "signal-logger@workspace:."
+  dependencies:
+    "@commitlint/cli": ^18.2.0
+    "@commitlint/config-conventional": ^18.1.0
+    "@swc/cli": ^0.5.2
+    "@swc/core": ^1.10.1
+    "@types/node": ^22.10.1
+    "@typescript-eslint/eslint-plugin": ^8.28.0
+    "@typescript-eslint/parser": ^8.28.0
+    detailed-json: ^1.0.1
+    eslint: ^9.16.0
+    eslint-config-prettier: ^10.1.1
+    fast-deep-equal: ^3.1.3
+    function-performer: ^1.0.0-canary.0
+    husky: ^8.0.3
+    lint-staged: ^15.0.2
+    prettier: ^3.0.3
+    typescript: ^5.7.2
+  languageName: unknown
+  linkType: soft
 
 "slash@npm:3.0.0":
   version: 3.0.0
