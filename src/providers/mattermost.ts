@@ -184,7 +184,7 @@ export class MattermostLogProvider implements ILogProvider {
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
           ...options,
-          symbol: ':name_badge:',
+          symbol: ':bangbang:',
           messages,
         });
       },
@@ -205,7 +205,7 @@ export class MattermostLogProvider implements ILogProvider {
           text: this._rows(
             numberOfDuplicates > 0 &&
               `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
-            `:name_badge: ${title}\n`,
+            `:bangbang: ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
             `${this._buildErrorRow(error)}\n`,

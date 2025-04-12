@@ -179,7 +179,7 @@ export class TelegramLogProvider implements ILogProvider {
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
           ...options,
-          symbol: '📛',
+          symbol: '‼️',
           messages,
         });
       },
@@ -200,7 +200,7 @@ export class TelegramLogProvider implements ILogProvider {
           text: this._rows(
             numberOfDuplicates > 0 &&
               `${this._buildDuplicatesRow(numberOfDuplicates)}\n`,
-            `📛 ${title}\n`,
+            `‼️ ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
             this._buildErrorRow(error),
