@@ -21,6 +21,26 @@
   "bugs": {
     "url": "https://github.com/oleg-putseiko/signal-logger/issues"
   },
+  "main": "dist/index.js",
+  "files": [
+    "dist/**/*.d.ts",
+    "dist/contexts/**/*.js",
+    "dist/providers/**/*.js",
+    "dist/logger.js",
+    "dist/index.js"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./contexts": "./dist/contexts/index.js",
+    "./contexts/base": "./dist/contexts/base.js",
+    "./contexts/vercel": "./dist/contexts/vercel.js",
+    "./providers": "./dist/providers/index.js",
+    "./providers/jetbrains/space": "./dist/providers/jetbrains/space.js",
+    "./providers/base": "./dist/providers/base.js",
+    "./providers/console": "./dist/providers/console.js",
+    "./providers/mattermost": "./dist/providers/mettermost.js",
+    "./providers/telegram": "./dist/providers/telegram.js"
+  },
   "scripts": {
     "build": "yarn build:swc && yarn build:tsc",
     "build:swc": "swc src -d dist --strip-leading-paths --out-file-extension js",
