@@ -45,11 +45,12 @@ export interface ISuccessOptions<TTemplate extends AnyObject = AnyObject>
 export interface ILogFunction<TOptions extends IBaseOptions> {
   (options: TOptions | unknown[]): void | Promise<void>;
 }
+
 export interface ILogProvider {
   debug?: ILogFunction<IDebugOptions>;
-  log: ILogFunction<ILogOptions>;
-  info: ILogFunction<IInfoOptions>;
-  warn: ILogFunction<IWarnOptions>;
-  error: ILogFunction<IErrorOptions>;
-  success: ILogFunction<ISuccessOptions>;
+  log?: ILogFunction<ILogOptions>;
+  info?: ILogFunction<IInfoOptions>;
+  warn?: ILogFunction<IWarnOptions>;
+  error?: ILogFunction<IErrorOptions>;
+  success?: ILogFunction<ISuccessOptions>;
 }
