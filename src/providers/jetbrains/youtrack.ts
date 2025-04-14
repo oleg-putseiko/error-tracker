@@ -1,4 +1,6 @@
-import { Json } from 'detailed-json';
+import { isObject } from '../../utils/guards.js';
+import { LogMethodOptions } from '../../utils/log-method-options.js';
+import { pluralize } from '../../utils/pluralization.js';
 import {
   IInfoOptions,
   ILogOptions,
@@ -7,21 +9,20 @@ import {
   LogLabel,
   type IErrorOptions,
   type ILogProvider,
-} from './base.js';
-import { LogMethodOptions } from '../utils/log-method-options.js';
-import { isObject } from '../utils/guards.js';
-import { pluralize } from '../utils/pluralization.js';
+} from '../base.js';
+import { Json } from 'detailed-json';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
 type RequestOptions = {
-  botToken?: string;
-  chatId?: string;
+  baseUrl?: string;
+  apiKey?: string;
+  issueId?: string;
 };
 
 type FetchOptions = Omit<RequestInit, 'body'> &
-  Omit<RequestOptions, 'chatId'> & {
-    params?: Record<string, unknown>;
+  Omit<RequestOptions, 'issueId'> & {
+    body?: Record<string, unknown>;
   };
 
 type SendMessageOptions = RequestOptions & {
@@ -38,45 +39,47 @@ type TemplateOptions = {
   description?: string;
 };
 
-export interface ITelegramLogOptions
+export interface IJetBrainsYouTrackLogOptions
   extends RequestOptions,
     ILogOptions<TemplateOptions> {}
 
-export interface ITelegramInfoOptions
+export interface IJetBrainsYouTrackInfoOptions
   extends RequestOptions,
     IInfoOptions<TemplateOptions> {}
 
-export interface ITelegramWarnOptions
+export interface IJetBrainsYouTrackWarnOptions
   extends RequestOptions,
     IWarnOptions<TemplateOptions> {}
 
-export interface ITelegramErrorOptions
+export interface IJetBrainsYouTrackErrorOptions
   extends RequestOptions,
     IErrorOptions<TemplateOptions> {}
 
-export interface ITelegramSuccessOptions
+export interface IJetBrainsYouTrackSuccessOptions
   extends RequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-export type TelegramLogProviderConfig = RequestOptions & {
+export type JetBrainsYouTrackLogProviderConfig = RequestOptions & {
   enabled?: boolean;
 };
 
-export class TelegramLogProvider implements ILogProvider {
+export class JetBrainsYouTrackLogProvider implements ILogProvider {
   readonly enabled?: boolean;
 
-  private readonly _botToken?: string;
-  private readonly _chatId?: string;
+  private readonly _baseUrl?: string;
+  private readonly _apiKey?: string;
+  private readonly _issueId?: string;
 
-  constructor(config?: TelegramLogProviderConfig) {
+  constructor(config?: JetBrainsYouTrackLogProviderConfig) {
     this.enabled = config?.enabled;
 
-    this._botToken = config?.botToken;
-    this._chatId = config?.chatId;
+    this._baseUrl = config?.baseUrl;
+    this._apiKey = config?.apiKey;
+    this._issueId = config?.issueId;
   }
 
-  async log(options: ITelegramLogOptions | unknown[]) {
-    await LogMethodOptions.switch<ITelegramLogOptions>({
+  async log(options: IJetBrainsYouTrackLogOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsYouTrackLogOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -85,7 +88,7 @@ export class TelegramLogProvider implements ILogProvider {
         });
       },
       styled: async (template, options) => {
-        const { title, description, context, labels } = template;
+        const { title, description, labels, context } = template;
         const { numberOfCalls } = options;
 
         const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
@@ -105,8 +108,8 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async info(options: ITelegramInfoOptions | unknown[]) {
-    await LogMethodOptions.switch<ITelegramInfoOptions>({
+  async info(options: IJetBrainsYouTrackInfoOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsYouTrackInfoOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -141,8 +144,8 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async warn(options: ITelegramWarnOptions | unknown[]) {
-    await LogMethodOptions.switch<ITelegramWarnOptions>({
+  async warn(options: IJetBrainsYouTrackWarnOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsYouTrackWarnOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -172,8 +175,8 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async error(options: ITelegramErrorOptions | unknown[]) {
-    await LogMethodOptions.switch<ITelegramErrorOptions>({
+  async error(options: IJetBrainsYouTrackErrorOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsYouTrackErrorOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -202,7 +205,7 @@ export class TelegramLogProvider implements ILogProvider {
             `‼️ ${title}\n`,
             description && `${description}\n`,
             labels && `${this._buildLabelsRow(labels)}\n`,
-            this._buildErrorRow(error),
+            `${this._buildErrorRow(error)}\n`,
             context && this._buildContextRow(context),
           ),
         });
@@ -210,8 +213,8 @@ export class TelegramLogProvider implements ILogProvider {
     });
   }
 
-  async success(options: ITelegramSuccessOptions | unknown[]) {
-    await LogMethodOptions.switch<ITelegramSuccessOptions>({
+  async success(options: IJetBrainsYouTrackSuccessOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsYouTrackSuccessOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -221,7 +224,7 @@ export class TelegramLogProvider implements ILogProvider {
         });
       },
       styled: async (template, options) => {
-        const { title = 'Success', description, labels, context } = template;
+        const { title = 'Success', labels, description, context } = template;
         const { numberOfCalls } = options;
 
         const numberOfDuplicates = numberOfCalls ? numberOfCalls - 1 : 0;
@@ -246,8 +249,7 @@ export class TelegramLogProvider implements ILogProvider {
 
     const stringifiedMessages = messages
       .map((item) => (isObject(item) ? Json.stringify(item) : item))
-      .join(' ')
-      .replace(/([{}\\[\]()])/gu, '\\$1');
+      .join(' ');
 
     await this._sendMessage({
       ...delegatedOptions,
@@ -256,36 +258,45 @@ export class TelegramLogProvider implements ILogProvider {
   }
 
   private async _sendMessage(options: SendMessageOptions) {
-    const botToken = options?.botToken ?? this._botToken;
-    const chatId = options.chatId ?? this._chatId;
+    const issueId = options?.issueId ?? this._issueId;
 
-    if (!botToken) throw new TypeError('Telegram bot token is not defined');
+    if (!issueId) {
+      throw new TypeError('JetBrains YouTrack issue id is not defined');
+    }
 
-    if (!chatId) throw new TypeError('Telegram chat id is not defined');
-
-    const params = {
-      chat_id: chatId,
-      parse_mode: 'MarkdownV2',
+    const body = {
+      author: null,
       text: options.text,
     };
 
-    return await this._fetch('/sendMessage', { method: 'POST', params });
+    await this._fetch(`/issues/${issueId}/comments`, {
+      method: 'POST',
+      body,
+    });
   }
 
-  private async _fetch(url: string, options?: FetchOptions) {
-    const { params, ...init } = options ?? {};
+  private async _fetch(path: string, options?: FetchOptions) {
+    const baseUrl = options?.baseUrl ?? this._baseUrl;
+    const apiKey = options?.apiKey ?? this._apiKey;
 
-    const botToken = options?.botToken ?? this._botToken;
-    const searchParams = params
-      ? `?${this._stringifySearchParams(params)}`
-      : '';
+    if (!baseUrl) {
+      throw new TypeError('JetBrains YouTrack base URL is not defined');
+    }
 
-    if (!botToken) throw new TypeError('Telegram bot token is not defined');
+    if (!apiKey) {
+      throw new TypeError('JetBrains YouTrack API key is not defined');
+    }
 
-    return await fetch(
-      `https://api.telegram.org/bot${botToken}${url}${searchParams}`,
-      init,
-    );
+    return await fetch(`${baseUrl}/api${path}`, {
+      ...options,
+      body: options?.body ? Json.stringify(options.body) : undefined,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
   }
 
   private _buildDuplicatesRow(count: number): string {
@@ -324,13 +335,5 @@ export class TelegramLogProvider implements ILogProvider {
 
   private _rows(...rows: unknown[]): string {
     return rows.filter(Boolean).join('\n');
-  }
-
-  private _stringifySearchParams(params: Record<string, unknown>): string {
-    return encodeURI(
-      Object.entries(params)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('&'),
-    );
   }
 }

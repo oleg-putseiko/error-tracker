@@ -14,23 +14,22 @@ import { Json } from 'detailed-json';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
-type FetchOptions = Omit<RequestInit, 'body'> & {
+type RequestOptions = {
   baseUrl?: string;
   apiKey?: string;
-  body?: Record<string, unknown>;
+  channelId?: string;
 };
 
-type SendMessageOptions = {
-  channelId?: string;
-  baseUrl?: string;
-  apiKey?: string;
+type FetchOptions = Omit<RequestInit, 'body'> &
+  Omit<RequestOptions, 'channelId'> & {
+    body?: Record<string, unknown>;
+  };
+
+type SendMessageOptions = RequestOptions & {
   text: string;
 };
 
-type SendUnstyledMessageOptions = {
-  channelId?: string;
-  baseUrl?: string;
-  apiKey?: string;
+type SendUnstyledMessageOptions = RequestOptions & {
   symbol?: string;
   messages: unknown[];
 };
@@ -40,35 +39,28 @@ type TemplateOptions = {
   description?: string;
 };
 
-interface IRequestOptions {
-  channelId?: string;
-}
-
 export interface IMattermostLogOptions
-  extends IRequestOptions,
+  extends RequestOptions,
     ILogOptions<TemplateOptions> {}
 
 export interface IMattermostInfoOptions
-  extends IRequestOptions,
+  extends RequestOptions,
     IInfoOptions<TemplateOptions> {}
 
 export interface IMattermostWarnOptions
-  extends IRequestOptions,
+  extends RequestOptions,
     IWarnOptions<TemplateOptions> {}
 
 export interface IMattermostErrorOptions
-  extends IRequestOptions,
+  extends RequestOptions,
     IErrorOptions<TemplateOptions> {}
 
 export interface IMattermostSuccessOptions
-  extends IRequestOptions,
+  extends RequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-export type MattermostLogProviderConfig = {
+export type MattermostLogProviderConfig = RequestOptions & {
   enabled?: boolean;
-  baseUrl?: string;
-  apiKey?: string;
-  channelId?: string;
 };
 
 export class MattermostLogProvider implements ILogProvider {
