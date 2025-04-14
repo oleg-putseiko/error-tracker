@@ -14,19 +14,22 @@ import { Json } from 'detailed-json';
 
 type RequestInit = Exclude<Parameters<typeof fetch>[1], undefined>;
 
-type FetchOptions = Omit<RequestInit, 'body'> & {
+type RequestOptions = {
   baseUrl?: string;
   apiKey?: string;
-  body?: Record<string, unknown>;
+  channelName?: string;
 };
 
-type SendMessageOptions = {
-  channelName?: string;
+type FetchOptions = Omit<RequestInit, 'body'> &
+  Omit<RequestOptions, 'channelName'> & {
+    body?: Record<string, unknown>;
+  };
+
+type SendMessageOptions = RequestOptions & {
   text: string;
 };
 
-type SendUnstyledMessageOptions = {
-  channelName?: string;
+type SendUnstyledMessageOptions = RequestOptions & {
   symbol?: string;
   messages: unknown[];
 };
@@ -36,47 +39,39 @@ type TemplateOptions = {
   description?: string;
 };
 
-interface IRequestOptions {
-  botToken?: string;
-  chatId?: string;
-}
-
-export interface IJetbrainsSpaceLogOptions
-  extends IRequestOptions,
+export interface IJetBrainsSpaceLogOptions
+  extends RequestOptions,
     ILogOptions<TemplateOptions> {}
 
-export interface IJetbrainsSpaceInfoOptions
-  extends IRequestOptions,
+export interface IJetBrainsSpaceInfoOptions
+  extends RequestOptions,
     IInfoOptions<TemplateOptions> {}
 
-export interface IJetbrainsSpaceWarnOptions
-  extends IRequestOptions,
+export interface IJetBrainsSpaceWarnOptions
+  extends RequestOptions,
     IWarnOptions<TemplateOptions> {}
 
-export interface IJetbrainsSpaceErrorOptions
-  extends IRequestOptions,
+export interface IJetBrainsSpaceErrorOptions
+  extends RequestOptions,
     IErrorOptions<TemplateOptions> {}
 
-export interface IJetbrainsSpaceSuccessOptions
-  extends IRequestOptions,
+export interface IJetBrainsSpaceSuccessOptions
+  extends RequestOptions,
     ISuccessOptions<TemplateOptions> {}
 
-export type JetbrainsSpaceLogProviderConfig = {
+export type JetBrainsSpaceLogProviderConfig = RequestOptions & {
   enabled?: boolean;
-  baseUrl?: string;
-  apiKey?: string;
-  channelName?: string;
 };
 
 /** @deprecated JetBrains Space will no longer be available after June 1, 2025 */
-export class JetbrainsSpaceLogProvider implements ILogProvider {
+export class JetBrainsSpaceLogProvider implements ILogProvider {
   readonly enabled?: boolean;
 
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
   private readonly _channelName?: string;
 
-  constructor(config?: JetbrainsSpaceLogProviderConfig) {
+  constructor(config?: JetBrainsSpaceLogProviderConfig) {
     this.enabled = config?.enabled;
 
     this._baseUrl = config?.baseUrl;
@@ -84,8 +79,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     this._channelName = config?.channelName;
   }
 
-  async log(options: IJetbrainsSpaceLogOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceLogOptions>({
+  async log(options: IJetBrainsSpaceLogOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsSpaceLogOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -114,8 +109,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async info(options: IJetbrainsSpaceInfoOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceInfoOptions>({
+  async info(options: IJetBrainsSpaceInfoOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsSpaceInfoOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -150,8 +145,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async warn(options: IJetbrainsSpaceWarnOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceWarnOptions>({
+  async warn(options: IJetBrainsSpaceWarnOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsSpaceWarnOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -181,8 +176,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async error(options: IJetbrainsSpaceErrorOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceErrorOptions>({
+  async error(options: IJetBrainsSpaceErrorOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsSpaceErrorOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -219,8 +214,8 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     });
   }
 
-  async success(options: IJetbrainsSpaceSuccessOptions | unknown[]) {
-    await LogMethodOptions.switch<IJetbrainsSpaceSuccessOptions>({
+  async success(options: IJetBrainsSpaceSuccessOptions | unknown[]) {
+    await LogMethodOptions.switch<IJetBrainsSpaceSuccessOptions>({
       options,
       unstyled: async (messages, options) => {
         await this._sendUnstyledMessage({
@@ -267,7 +262,7 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     const channelName = options?.channelName ?? this._channelName;
 
     if (!channelName) {
-      throw new TypeError('Jetbrains Space channel name is not defined');
+      throw new TypeError('JetBrains Space channel name is not defined');
     }
 
     const body = {
@@ -289,11 +284,11 @@ export class JetbrainsSpaceLogProvider implements ILogProvider {
     const apiKey = options?.apiKey ?? this._apiKey;
 
     if (!baseUrl) {
-      throw new TypeError('Jetbrains Space base URL is not defined');
+      throw new TypeError('JetBrains Space base URL is not defined');
     }
 
     if (!apiKey) {
-      throw new TypeError('Jetbrains Space API key is not defined');
+      throw new TypeError('JetBrains Space API key is not defined');
     }
 
     return await fetch(`${baseUrl}/api/http${path}`, {
