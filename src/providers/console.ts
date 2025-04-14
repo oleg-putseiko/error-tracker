@@ -62,6 +62,10 @@ export interface IConsoleErrorOptions extends IErrorOptions<TemplateOptions> {}
 export interface IConsoleSuccessOptions
   extends ISuccessOptions<TemplateOptions> {}
 
+export type ConsoleLogProviderConfig = {
+  enabled?: boolean;
+};
+
 const __PARAGRAPH_SYMBOL__: unique symbol = Symbol();
 
 const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
@@ -69,6 +73,12 @@ const SPECIAL_SYMBOLS = [__PARAGRAPH_SYMBOL__];
 const IS_WINDOW_DEFINED = typeof window !== 'undefined';
 
 export class ConsoleLogProvider implements ILogProvider {
+  readonly enabled?: boolean;
+
+  constructor(config?: ConsoleLogProviderConfig) {
+    this.enabled = config?.enabled;
+  }
+
   debug(options: IConsoleDebugOptions | unknown[]) {
     const kind: LogKindDetails = {
       value: 'debug',

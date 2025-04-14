@@ -12,6 +12,8 @@ import {
 } from './providers/base.js';
 import { isObject } from './utils/guards.js';
 
+type LogMethod = 'debug' | 'log' | 'info' | 'warn' | 'error' | 'success';
+
 type Providers = Record<string, ILogProvider>;
 
 type DeduplicateOptions = {
@@ -24,7 +26,7 @@ type ExecutionOptions = {
 
 type ProviderOptions<
   TProviders extends Providers,
-  TLogKey extends keyof ILogProvider,
+  TLogKey extends LogMethod,
 > = {
   [_Id in keyof TProviders]?: ExecutionOptions &
     Exclude<
@@ -137,7 +139,7 @@ export class Logger<TProviders extends Providers> {
   }
 
   private async _execute(
-    method: keyof ILogProvider,
+    method: LogMethod,
     options: ExecuteOptions<TProviders> | unknown[],
   ) {
     if (this._shouldDeduplicate) {
@@ -155,7 +157,7 @@ export class Logger<TProviders extends Providers> {
   private async _dispatchDeduplicatedEvent(
     numberOfCalls: number,
     context: this,
-    event: keyof ILogProvider,
+    event: LogMethod,
     options: ExecuteOptions<TProviders> | unknown[],
   ) {
     const delegatedOptions = Array.isArray(options)
@@ -166,21 +168,24 @@ export class Logger<TProviders extends Providers> {
   }
 
   private async _dispatchEvent(
-    event: keyof ILogProvider,
+    event: LogMethod,
     options: ExecuteOptions<TProviders> | unknown[],
   ) {
     await Promise.allSettled(
       Object.entries(this._providers).map(async ([id, provider]) => {
+        const isEnabledByDefault = provider.enabled ?? this._isEnabled;
+
         if (Array.isArray(options)) {
-          if (this._isEnabled) return await provider[event]?.(options);
+          if (isEnabledByDefault) return await provider[event]?.(options);
           throw new DisabledProviderError(id);
         }
 
         const { providers, ...delegatedOptions } = options;
 
         const providerOptions = providers?.[id];
+        const isEnabled = providerOptions?.enabled ?? isEnabledByDefault;
 
-        if (providerOptions?.enabled ?? this._isEnabled) {
+        if (isEnabled) {
           return await provider[event]?.({
             ...delegatedOptions,
             ...providerOptions,

@@ -65,20 +65,25 @@ export interface IMattermostSuccessOptions
     ISuccessOptions<TemplateOptions> {}
 
 export type MattermostLogProviderConfig = {
+  enabled?: boolean;
   baseUrl?: string;
   apiKey?: string;
   channelId?: string;
 };
 
 export class MattermostLogProvider implements ILogProvider {
+  readonly enabled?: boolean;
+
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
   private readonly _channelId?: string;
 
-  constructor(config: MattermostLogProviderConfig) {
-    this._baseUrl = config.baseUrl;
-    this._apiKey = config.apiKey;
-    this._channelId = config.channelId;
+  constructor(config?: MattermostLogProviderConfig) {
+    this.enabled = config?.enabled;
+
+    this._baseUrl = config?.baseUrl;
+    this._apiKey = config?.apiKey;
+    this._channelId = config?.channelId;
   }
 
   async log(options: IMattermostLogOptions | unknown[]) {

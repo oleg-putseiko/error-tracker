@@ -47,6 +47,8 @@ export interface ILogFunction<TOptions extends IBaseOptions> {
 }
 
 export interface ILogProvider {
+  readonly enabled?: boolean;
+
   debug?: ILogFunction<IDebugOptions>;
   log?: ILogFunction<ILogOptions>;
   info?: ILogFunction<IInfoOptions>;

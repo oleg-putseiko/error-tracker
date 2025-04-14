@@ -62,6 +62,7 @@ export interface IJetbrainsSpaceSuccessOptions
     ISuccessOptions<TemplateOptions> {}
 
 export type JetbrainsSpaceLogProviderConfig = {
+  enabled?: boolean;
   baseUrl?: string;
   apiKey?: string;
   channelName?: string;
@@ -69,14 +70,18 @@ export type JetbrainsSpaceLogProviderConfig = {
 
 /** @deprecated JetBrains Space will no longer be available after June 1, 2025 */
 export class JetbrainsSpaceLogProvider implements ILogProvider {
+  readonly enabled?: boolean;
+
   private readonly _baseUrl?: string;
   private readonly _apiKey?: string;
   private readonly _channelName?: string;
 
-  constructor(config: JetbrainsSpaceLogProviderConfig) {
-    this._baseUrl = config.baseUrl;
-    this._apiKey = config.apiKey;
-    this._channelName = config.channelName;
+  constructor(config?: JetbrainsSpaceLogProviderConfig) {
+    this.enabled = config?.enabled;
+
+    this._baseUrl = config?.baseUrl;
+    this._apiKey = config?.apiKey;
+    this._channelName = config?.channelName;
   }
 
   async log(options: IJetbrainsSpaceLogOptions | unknown[]) {

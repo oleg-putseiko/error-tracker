@@ -131,7 +131,19 @@ const logger = new Logger({
 });
 ```
 
-To enable or disable logging for a specific provider specify the value of the `enabled` property for it in the `providers` property:
+To enable or disable logging for a specific provider specify the value of the `enabled` property for it in the provider configuration:
+
+```ts
+const logger = new Logger({
+  providers: {
+    telegram: new TelegramLogProvider({
+      enable: process.env.NODE_ENV !== 'production',
+    }),
+  },
+});
+```
+
+Or specify the value you need when calling the logging method:
 
 ```ts
 logger.info({
