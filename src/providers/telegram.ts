@@ -63,17 +63,22 @@ export interface ITelegramSuccessOptions
     ISuccessOptions<TemplateOptions> {}
 
 export type TelegramLogProviderConfig = {
+  enabled?: boolean;
   botToken?: string;
   chatId?: string;
 };
 
 export class TelegramLogProvider implements ILogProvider {
+  readonly enabled?: boolean;
+
   private readonly _botToken?: string;
   private readonly _chatId?: string;
 
-  constructor(config: TelegramLogProviderConfig) {
-    this._botToken = config.botToken;
-    this._chatId = config.chatId;
+  constructor(config?: TelegramLogProviderConfig) {
+    this.enabled = config?.enabled;
+
+    this._botToken = config?.botToken;
+    this._chatId = config?.chatId;
   }
 
   async log(options: ITelegramLogOptions | unknown[]) {
