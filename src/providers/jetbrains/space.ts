@@ -274,6 +274,7 @@ export class JetBrainsSpaceLogProvider implements ILogProvider {
     };
 
     await this._fetch('/chats/messages/send-message', {
+      ...options,
       method: 'POST',
       body,
     });

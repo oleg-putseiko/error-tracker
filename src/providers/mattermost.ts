@@ -269,7 +269,7 @@ export class MattermostLogProvider implements ILogProvider {
       message: options.text,
     };
 
-    await this._fetch('/posts', { method: 'POST', body });
+    await this._fetch('/posts', { ...options, method: 'POST', body });
   }
 
   private async _fetch(path: string, options?: FetchOptions) {

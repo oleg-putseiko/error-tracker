@@ -256,10 +256,7 @@ export class TelegramLogProvider implements ILogProvider {
   }
 
   private async _sendMessage(options: SendMessageOptions) {
-    const botToken = options?.botToken ?? this._botToken;
     const chatId = options.chatId ?? this._chatId;
-
-    if (!botToken) throw new TypeError('Telegram bot token is not defined');
 
     if (!chatId) throw new TypeError('Telegram chat id is not defined');
 
@@ -269,7 +266,11 @@ export class TelegramLogProvider implements ILogProvider {
       text: options.text,
     };
 
-    return await this._fetch('/sendMessage', { method: 'POST', params });
+    return await this._fetch('/sendMessage', {
+      ...options,
+      method: 'POST',
+      params,
+    });
   }
 
   private async _fetch(url: string, options?: FetchOptions) {

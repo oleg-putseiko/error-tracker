@@ -270,6 +270,7 @@ export class JetBrainsYouTrackLogProvider implements ILogProvider {
     };
 
     await this._fetch(`/issues/${issueId}/comments`, {
+      ...options,
       method: 'POST',
       body,
     });
